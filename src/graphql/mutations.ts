@@ -1,0 +1,224 @@
+import { gql } from '@apollo/client';
+
+export const CREATE_WORKFLOW = gql`
+  mutation createChaosWorkFlow($ChaosWorkFlowInput: ChaosWorkFlowInput!) {
+    createChaosWorkFlow(input: $ChaosWorkFlowInput) {
+      workflow_id
+      cronSyntax
+      workflow_name
+      workflow_description
+      isCustomWorkflow
+    }
+  }
+`;
+
+export const CREATE_PROJECT = gql`
+  mutation createProject($project: String!) {
+    createProject(projectName: $project) {
+      members {
+        user_uid
+        role
+        invitation
+        joined_at
+      }
+      name
+      id
+    }
+  }
+`;
+
+export const SEND_INVITE = gql`
+  mutation sendInvite($member: MemberInput!) {
+    sendInvitation(member: $member) {
+      user_uid
+      role
+      invitation
+      joined_at
+    }
+  }
+`;
+
+export const REMOVE_INVITATION = gql`
+  mutation RemoveInvitation($data: MemberInput!) {
+    removeInvitation(member: $data)
+  }
+`;
+
+export const ACCEPT_INVITE = gql`
+  mutation accept($member: MemberInput!) {
+    acceptInvitation(member: $member)
+  }
+`;
+
+export const DECLINE_INVITE = gql`
+  mutation decline($member: MemberInput!) {
+    declineInvitation(member: $member)
+  }
+`;
+
+export const DELETE_SCHEDULE = gql`
+  mutation deleteWorkflow($workflow_id: String!) {
+    deleteChaosWorkflow(workflowid: $workflow_id)
+  }
+`;
+
+export const UPDATE_SCHEDULE = gql`
+  mutation updateChaos($ChaosWorkFlowInput: ChaosWorkFlowInput!) {
+    updateChaosWorkflow(input: $ChaosWorkFlowInput) {
+      workflow_id
+      workflow_name
+      workflow_description
+      isCustomWorkflow
+      cronSyntax
+    }
+  }
+`;
+
+export const UPDATE_DETAILS = gql`
+  mutation updateUser($user: UpdateUserInput!) {
+    updateUser(user: $user)
+  }
+`;
+
+export const USER_CLUSTER_REG = gql`
+  mutation userCluster($ClusterInput: ClusterInput!) {
+    userClusterReg(clusterInput: $ClusterInput) {
+      token
+      cluster_id
+      cluster_name
+    }
+  }
+`;
+
+export const CREATE_DATASOURCE = gql`
+  mutation createDataSource($DSInput: DSInput) {
+    createDataSource(datasource: $DSInput) {
+      ds_id
+      ds_name
+      ds_type
+      ds_url
+      access_type
+      auth_type
+      basic_auth_username
+      basic_auth_password
+      scrape_interval
+      query_timeout
+      http_method
+      project_id
+      health_status
+    }
+  }
+`;
+
+export const UPDATE_DATASOURCE = gql`
+  mutation updateDataSource($DSInput: DSInput!) {
+    updateDataSource(datasource: $DSInput) {
+      ds_id
+      ds_name
+      ds_type
+      ds_url
+      access_type
+      auth_type
+      basic_auth_username
+      basic_auth_password
+      scrape_interval
+      query_timeout
+      http_method
+      project_id
+    }
+  }
+`;
+
+export const DELETE_DATASOURCE = gql`
+  mutation deleteDataSource($deleteDSInput: deleteDSInput!) {
+    deleteDataSource(input: $deleteDSInput)
+  }
+`;
+
+export const ADD_MY_HUB = gql`
+  mutation addMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
+    addMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const SAVE_MY_HUB = gql`
+  mutation saveMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
+    saveMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const UPDATE_MY_HUB = gql`
+  mutation updateMyHub($MyHubDetails: UpdateMyHub!, $projectID: String!) {
+    updateMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const CREATE_DASHBOARD = gql`
+  mutation createDashBoard($createDBInput: createDBInput) {
+    createDashBoard(dashboard: $createDBInput)
+  }
+`;
+
+export const UPDATE_DASHBOARD = gql`
+  mutation updateDashboard($updataDBInput: updataDBInput) {
+    updateDashboard(dashboard: $updataDBInput)
+  }
+`;
+
+export const DELETE_DASHBOARD = gql`
+  mutation deleteDashboard($dbID: String) {
+    deleteDashboard(db_id: $dbID)
+  }
+`;
+
+export const UPDATE_PANEL = gql`
+  mutation updatePanel($panelInput: [panel]) {
+    updatePanel(panelInput: $panelInput)
+  }
+`;
+
+export const SYNC_REPO = gql`
+  mutation syncHub($id: ID!) {
+    syncHub(id: $id) {
+      id
+      RepoURL
+      RepoBranch
+      IsAvailable
+      TotalExp
+      HubName
+    }
+  }
+`;
+
+export const DELETE_HUB = gql`
+  mutation deleteMyHub($hub_id: String!) {
+    deleteMyHub(hub_id: $hub_id)
+  }
+`;
+
+export const DELETE_CLUSTER = gql`
+  mutation deleteCluster($cluster_id: String!) {
+    deleteClusterReg(cluster_id: $cluster_id)
+  }
+`;
+
+export const GENERATE_SSH = gql`
+  mutation generateSSHKey {
+    generaterSSHKey {
+      privateKey
+      publicKey
+    }
+  }
+`;
