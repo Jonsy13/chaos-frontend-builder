@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       },
       '& g.Running': {
         '& circle': {
-          fill: theme.palette.status.running.text,
+          fill: '#5252F6',
         },
       },
       '& g.Pending': {

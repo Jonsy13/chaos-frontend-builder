@@ -11,15 +11,15 @@ import {
   Select,
   Typography,
 } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import SearchIcon from '@material-ui/icons/Search';
 import React, { useState } from 'react';
 import { DateRangePicker } from 'react-date-range';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@material-ui/core/styles';
 import 'react-date-range/dist/styles.css'; // main css file
 import 'react-date-range/dist/theme/default.css'; // theme css file
+import { useTranslation } from 'react-i18next';
 import useStyles, { useOutlinedInputStyles } from './styles';
 
 interface HeaderSectionProps {
@@ -109,7 +109,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           color="secondary"
         >
           <InputLabel className={classes.selectText}>
-            {t('workflowCluster.header.status')}
+            {t('workflowAgent.header.status')}
           </InputLabel>
           <Select
             value={statusValue}
@@ -119,16 +119,16 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             input={<OutlinedInput classes={outlinedInputClasses} />}
           >
             <MenuItem value="All">
-              {t('workflowCluster.header.formControl.menu')}
+              {t('workflowAgent.header.formControl.menu')}
             </MenuItem>
             <MenuItem value="true">
-              {t('workflowCluster.header.formControl.menu1')}
+              {t('workflowAgent.header.formControl.menu1')}
             </MenuItem>
             <MenuItem value="false">
-              {t('workflowCluster.header.formControl.menu2')}
+              {t('workflowAgent.header.formControl.menu2')}
             </MenuItem>
             <MenuItem value="pending">
-              {t('workflowCluster.header.formControl.menu6')}
+              {t('workflowAgent.header.formControl.menu6')}
             </MenuItem>
           </Select>
         </FormControl>
@@ -140,7 +140,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           color="secondary"
         >
           <InputLabel className={classes.selectText}>
-            {t('workflowCluster.header.target')}
+            {t('workflowAgent.header.target')}
           </InputLabel>
           <Select
             value={clusterValue}
@@ -150,13 +150,13 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             input={<OutlinedInput classes={outlinedInputClasses} />}
           >
             <MenuItem value="All">
-              {t('workflowCluster.header.formControl.menu')}
+              {t('workflowAgent.header.formControl.menu')}
             </MenuItem>
             <MenuItem value="Internal">
-              {t('workflowCluster.header.formControl.menu4')}
+              {t('workflowAgent.header.formControl.menu4')}
             </MenuItem>
             <MenuItem value="External">
-              {t('workflowCluster.header.formControl.menu5')}
+              {t('workflowAgent.header.formControl.menu5')}
             </MenuItem>
           </Select>
         </FormControl>

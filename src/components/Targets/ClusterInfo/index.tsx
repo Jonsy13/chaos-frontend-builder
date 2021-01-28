@@ -42,11 +42,11 @@ const ClusterInfo: React.FC<ClusterVarsProps> = ({ location }) => {
       <section className="Header section">
         <div className={classes.backBotton}>
           <BackButton isDisabled={false}>
-            <div>{t('workflowCluster.header.formControl.back')}</div>
+            <div>{t('workflowAgent.header.formControl.back')}</div>
           </BackButton>
           <div className={classes.header}>
             <Typography variant="h4">
-              {t('workflowCluster.header.formControl.clusterInfo')}
+              {t('workflowAgent.header.formControl.clusterInfo')}
             </Typography>
           </div>
         </div>
@@ -68,19 +68,19 @@ const ClusterInfo: React.FC<ClusterVarsProps> = ({ location }) => {
                       <Typography
                         className={`${classes.check} ${classes.active}`}
                       >
-                        {t('workflowCluster.header.formControl.menu1')}
+                        {t('workflowAgent.header.formControl.menu1')}
                       </Typography>
                     ) : data.is_cluster_confirmed === false ? (
                       <Typography
                         className={`${classes.check} ${classes.pending}`}
                       >
-                        {t('workflowCluster.header.formControl.menu6')}
+                        {t('workflowAgent.header.formControl.menu6')}
                       </Typography>
                     ) : (
                       <Typography
                         className={`${classes.check} ${classes.notactive}`}
                       >
-                        {t('workflowCluster.header.formControl.menu2')}
+                        {t('workflowAgent.header.formControl.menu2')}
                       </Typography>
                     )}
                   </div>
@@ -111,7 +111,7 @@ const ClusterInfo: React.FC<ClusterVarsProps> = ({ location }) => {
               <div>
                 <Typography variant="h6">
                   <strong>
-                    {t('workflowCluster.header.formControl.about')}{' '}
+                    {t('workflowAgent.header.formControl.about')}{' '}
                   </strong>
                 </Typography>
               </div>

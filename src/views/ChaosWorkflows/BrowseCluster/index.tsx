@@ -243,7 +243,7 @@ const BrowseCluster = () => {
                 <StyledTableCell>
                   <div className={classes.tableCell}>
                     <Typography className={classes.headerStatus}>
-                      {t('workflowCluster.header.formControl.tableStatus')}
+                      {t('workflowAgent.header.formControl.tableStatus')}
                     </Typography>
                     <IconButton
                       aria-label="sort in descending order"
@@ -268,7 +268,7 @@ const BrowseCluster = () => {
                 <StyledTableCell className={classes.workflowCell}>
                   <div className={classes.tableCell}>
                     <Typography className={classes.workflowName}>
-                      {t('workflowCluster.header.formControl.tableCluster')}
+                      {t('workflowAgent.header.formControl.tableCluster')}
                     </Typography>
                     <IconButton
                       aria-label="sort in descending"
@@ -292,14 +292,14 @@ const BrowseCluster = () => {
                 {/* Target Cluster */}
                 <StyledTableCell>
                   <Typography className={classes.targetCluster}>
-                    {t('workflowCluster.header.formControl.connectionDate')}
+                    {t('workflowAgent.header.formControl.connectionDate')}
                   </Typography>
                 </StyledTableCell>
 
                 {/* Reliability */}
                 <StyledTableCell>
                   <Typography className={classes.headData}>
-                    {t('workflowCluster.header.formControl.noWorkflows')}
+                    {t('workflowAgent.header.formControl.noWorkflows')}
                   </Typography>
                 </StyledTableCell>
 
@@ -307,7 +307,7 @@ const BrowseCluster = () => {
                 <StyledTableCell>
                   <div className={classes.tableCell}>
                     <Typography className={classes.headData}>
-                      {t('workflowCluster.header.formControl.noSchedules')}
+                      {t('workflowAgent.header.formControl.noSchedules')}
                     </Typography>
                   </div>
                 </StyledTableCell>
@@ -316,7 +316,7 @@ const BrowseCluster = () => {
                 <StyledTableCell>
                   <div className={classes.tableCell}>
                     <Typography className={classes.headData}>
-                      {t('workflowCluster.header.formControl.lastworkflowrun')}
+                      {t('workflowAgent.header.formControl.lastworkflowrun')}
                     </Typography>
                   </div>
                 </StyledTableCell>
@@ -325,7 +325,7 @@ const BrowseCluster = () => {
                 <StyledTableCell>
                   <div className={classes.tableCell}>
                     <Typography className={classes.headData}>
-                      {t('workflowCluster.header.formControl.disconnect')}
+                      {t('workflowAgent.header.formControl.disconnect')}
                     </Typography>
                   </div>
                 </StyledTableCell>
@@ -344,7 +344,7 @@ const BrowseCluster = () => {
                 <TableRow>
                   <StyledTableCell data-cy="browseClusterError" colSpan={7}>
                     <Typography align="center">
-                      {t('workflowCluster.header.formControl.fetchingError')}
+                      {t('workflowAgent.header.formControl.fetchingError')}
                     </Typography>
                   </StyledTableCell>
                 </TableRow>
@@ -368,7 +368,7 @@ const BrowseCluster = () => {
                 <TableRow>
                   <StyledTableCell data-cy="browseClusterNoData" colSpan={0}>
                     <Typography align="center">
-                      {t('workflowCluster.header.formControl.recordAvailable')}
+                      {t('workflowAgent.header.formControl.recordAvailable')}
                     </Typography>
                   </StyledTableCell>
                 </TableRow>

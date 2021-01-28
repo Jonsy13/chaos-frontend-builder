@@ -101,7 +101,7 @@ const HomePage: React.FC = () => {
         user.updateUserDetails({ loader: false });
         // Flush data to persistor immediately
         persistor.flush();
-        // window.location.reload(false);
+        window.location.reload(false);
       }
     }
   }, [data]);

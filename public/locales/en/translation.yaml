@@ -56,11 +56,14 @@ customWorkflowCard:
 
 workflowStepper:
   continueError: To continue, please check the error in code.
+  scheduleNewChaosWorkflow: Schedule a new chaos workflow
   aNewChaosWorkflow: A new chaos workflow,
   successful: is successfully created!
   congratulationsSub1: Congratulations on creating your workflow! Now information about
   congratulationsSub2: it will be displayed on the workflow schedules.
   workflowBtn: Go to Workflow
+  step1:
+    errorSnackbar: You haven't selected any Target Agent
   finish: Finish
   next: Next
 
@@ -498,7 +501,8 @@ homeView:
 
 createWorkflow:
   chooseWorkflow:
-    header: Select or design workflow
+    title: Start creating your chaos workflow
+    subtitle: Simulate the workflow run and see the suggested reliability score
     info: Select one of the pre-defined chaos workflows or design your own workflow.
     preDefined: pre-defined workflows
     saved: Name saved as
@@ -624,14 +628,13 @@ connectTargets:
   button:
     buttonBack: Back to Targets
     buttonSchedule: Schedule a workflow
-workflowCluster:
+workflowAgent:
   header:
     status: Current Status
     target: Target Cluster
-    chooseAgent: Choose the target Kubernetes Agent
-    creatingNew: You are creating a
-    creatingNewBold: new chaos workflow.
-    selectAgent: Select a target Kubernetes Agent to run this workflow.
+    chooseAgent: Choose Agent to send the chaos workflow to
+    creatingNew: You are creating a new chaos workflow
+    selectAgent: Select a target Kubernetes cluster to run this workflow.
     selectCluster: Choose Active Cluster
     select: Select and Continue
     snackbar: No Cluster Registered With Your Project ID, Please Wait...
@@ -658,6 +661,8 @@ workflowCluster:
       clusterInfo: Cluster information
       about: About Kubera Cluster
       back: Back
+  search:
+    placeholder: Search
 
 workflows:
   browseWorkflows: Browse workflows

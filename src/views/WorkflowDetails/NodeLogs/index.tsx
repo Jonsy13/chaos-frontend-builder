@@ -1,6 +1,5 @@
 import { useQuery, useSubscription } from '@apollo/client';
 import { Typography } from '@material-ui/core';
-import { ButtonOutlined, Modal } from 'kubera-ui';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -151,15 +150,6 @@ const NodeLogs: React.FC<NodeLogsProps> = ({
   };
 
   return (
-    // <Modal
-    //   open={logsOpen}
-    //   onClose={handleClose}
-    //   modalActions={
-    //     <ButtonOutlined className={classes.closeButton} onClick={handleClose}>
-    //       &#x2715;
-    //     </ButtonOutlined>
-    //   }
-    // >
     <div className={classes.root}>
       <Typography className={classes.logsHeading}>
         Logs for this step
@@ -174,7 +164,6 @@ const NodeLogs: React.FC<NodeLogsProps> = ({
         )}
       </div>
     </div>
-    // </Modal>
   );
 };
 

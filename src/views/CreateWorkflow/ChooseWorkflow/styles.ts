@@ -1,116 +1,115 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Theme } from '@material-ui/core/styles';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    border: `0.0625rem solid ${theme.palette.border.main}`,
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: '0.1875rem',
-    height: '100%',
-    width: '80%',
+    background: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    padding: theme.spacing(4, 2),
     margin: '0 auto',
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-    display: 'flex',
+    width: '88%',
+    height: '100%',
     flexDirection: 'column',
-    padding: theme.spacing(0, 3.125, 4, 3.125),
+    [theme.breakpoints.up('lg')]: {
+      width: '87%',
+    },
   },
 
-  cards: {
-    paddingLeft: theme.spacing(1.875),
-    paddingRight: theme.spacing(1.875),
+  // Inner Container
+  innerContainer: {
+    margin: theme.spacing(4, 'auto'),
+    width: '95%', // Inner width of the container
   },
 
-  heading: {
-    marginTop: theme.spacing(6),
-    fontFamily: 'Ubuntu',
-    fontSize: '1.5rem',
-    marginLeft: theme.spacing(2),
-  },
-
-  modalHeading: {
-    marginTop: theme.spacing(1.5),
-    fontFamily: 'Ubuntu',
-    fontSize: '2.25rem',
-  },
-  down: {
-    marginBottom: theme.spacing(2),
-  },
-  description: {
-    width: '90%',
-    marginTop: theme.spacing(3.25),
-    fontFamily: 'Ubuntu',
-    fontSize: '1rem',
-    marginLeft: theme.spacing(2),
-  },
-
-  horizontalLine: {
-    marginTop: theme.spacing(2.5),
-    marginBottom: theme.spacing(4.5),
-    background: theme.palette.border.main,
-  },
-
-  paddedTop: {
-    marginTop: theme.spacing(5),
-  },
-
-  totalWorkflows: {
-    fontSize: '1rem',
-    fontWeight: 500,
-  },
-
-  inputDiv: {
-    marginTop: theme.spacing(5),
-  },
-
-  saved: {
-    width: '25rem',
-    marginTop: theme.spacing(6),
-    fontFamily: 'Ubuntu',
-    lineHeight: '130%',
-    fontWeight: 500,
-    fontSize: '1rem',
-    color: theme.palette.primary.dark,
-  },
-
-  testType: {
-    fontSize: '1rem',
-    fontFamily: 'Ubuntu',
-    paddingRight: theme.spacing(1.25),
-  },
-
-  resizeName: {
-    fontSize: '0.875rem',
-  },
-
-  modalContainerBody: {
-    position: 'relative',
-    width: '70%',
-    margin: 'auto',
-  },
-
-  modal: {
-    padding: theme.spacing(5),
-  },
-
-  closeButton: {
-    borderColor: theme.palette.border.main,
-  },
-
-  buttons: {
+  // Header Div
+  header: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: theme.spacing(2),
+  },
+  title: {
+    fontSize: '1.2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1.4rem',
+    },
+  },
+  subtitle: {
+    margin: theme.spacing(2, 0),
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1rem',
+      margin: theme.spacing(4, 0),
+    },
   },
 
-  selectionName: {
-    fontFamily: 'Ubuntu',
-    fontSize: '1rem',
+  // Divider
+  divider: {
+    border: 'none',
+    backgroundColor: theme.palette.disabledBackground,
+    height: '0.1rem',
   },
 
-  cancelButton: {
-    marginLeft: theme.spacing(-2),
+  // Selection Radio Buttons
+  m5: {
+    marginTop: theme.spacing(5),
   },
-  saveButton: {
-    marginRight: theme.spacing(-2),
+  accordion: {
+    border: 'none',
+    boxShadow: 'none',
+    '& .MuiAccordionSummary-root': {
+      marginLeft: '-1rem',
+      border: 'none',
+      height: '0.5rem',
+    },
+
+    '& .MuiAccordionDetails-root': {
+      position: 'relative',
+      marginLeft: '-1rem',
+      border: 'none',
+    },
+  },
+
+  // Accordion Expanded Body [Content]
+  predefinedWorkflowDiv: {
+    height: window.screen.height < 1080 ? '15rem' : '20rem',
+    overflowY: 'scroll',
+  },
+  predefinedWorkflowCard: {
+    backgroundColor: theme.palette.cards.background,
+    lineHeight: '5rem', // Making the div content vertically aligned
+    padding: theme.spacing(0, 5),
+    margin: theme.spacing(1, 0),
+
+    '& #body': {
+      width: '40rem',
+      display: 'flex',
+      justifyContent: 'space-between',
+    },
+
+    '& #left-div': {
+      width: '15rem',
+      display: 'flex',
+      marginLeft: theme.spacing(2),
+    },
+
+    '& #right-div': {
+      width: '20rem',
+      display: 'flex',
+    },
+  },
+  experimentIcon: {
+    width: '3rem',
+    height: '3rem',
+  },
+  predefinedWorkflowName: {
+    marginLeft: theme.spacing(2),
+    marginTop: theme.spacing(1.5),
+  },
+  blur: {
+    height: '4rem',
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    background: theme.palette.background.paper,
+    opacity: '0.8',
+    filter: 'blur(1rem)',
   },
 }));
 

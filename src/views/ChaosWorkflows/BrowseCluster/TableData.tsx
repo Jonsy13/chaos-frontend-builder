@@ -1,14 +1,14 @@
-import { Typography, IconButton, Tooltip } from '@material-ui/core';
-import React from 'react';
+import { IconButton, Tooltip, Typography } from '@material-ui/core';
+import { ButtonOutlined, Modal } from 'kubera-ui';
 import moment from 'moment';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Modal, ButtonOutlined } from 'kubera-ui';
-import useStyles, { StyledTableCell } from './styles';
-import { Cluster } from '../../../models/graphql/clusterData';
-import timeDifferenceForDate from '../../../utils/datesModifier';
 import ButtonFilled from '../../../components/Button/ButtonFilled';
+import { Cluster } from '../../../models/graphql/clusterData';
 import { RootState } from '../../../redux/reducers';
+import timeDifferenceForDate from '../../../utils/datesModifier';
+import useStyles, { StyledTableCell } from './styles';
 
 interface TableDataProps {
   data: Cluster;
@@ -47,15 +47,15 @@ const TableData: React.FC<TableDataProps> = ({ data, deleteRow }) => {
       <StyledTableCell className={classes.tableDataStatus}>
         {data.is_cluster_confirmed === false ? (
           <Typography className={`${classes.check} ${classes.pending}`}>
-            {t('workflowCluster.header.formControl.menu6')}
+            {t('workflowAgent.header.formControl.menu6')}
           </Typography>
         ) : data.is_cluster_confirmed === true && data.is_active ? (
           <Typography className={`${classes.check} ${classes.active}`}>
-            {t('workflowCluster.header.formControl.menu1')}
+            {t('workflowAgent.header.formControl.menu1')}
           </Typography>
         ) : (
           <Typography className={`${classes.check} ${classes.notactive}`}>
-            {t('workflowCluster.header.formControl.menu2')}
+            {t('workflowAgent.header.formControl.menu2')}
           </Typography>
         )}
       </StyledTableCell>

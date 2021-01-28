@@ -3,37 +3,64 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: '100%',
-    marginTop: '1rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    backgroundColor: theme.palette.cards.background,
+    padding: '1rem 1rem',
   },
   bold: {
-    // margin: theme.spacing(1,0,1,0),
+    fontSize: '1rem',
     fontWeight: 500,
   },
   header: {
     color: theme.palette.secondary.dark,
   },
-  nodeSpacing: {
+  nodeDetails: {
     width: '40%',
-    margin: '1rem 1rem',
   },
   heightMaintainer: {
+    marginTop: theme.spacing(2),
     display: 'flex',
-    // margin: '0rem 0rem 1rem 0rem',
     lineHeight: '2rem',
     justifyContent: 'space-between'
   },
-  footerButton: {
-    marginLeft: 'auto',
-    display: 'flex',
-    flexDirection: 'row',
-    padding: theme.spacing(3, 4, 4, 0),
-  },
-  nodeDetails: {
-    display: 'flex'
-  },
+
   textMargin: {
-    margin: theme.spacing(1,0,1,0)
-  }
+    display: 'flex',
+    lineHeight: '2rem',
+    justifyContent: 'space-between',
+    margin: theme.spacing(0,0,1,0)
+  },
+
+  text: {
+    fontSize: '1rem',
+  },
+
+  status: {
+    display: 'flex',
+  },
+
+  marginTop:{
+    display: 'flex',
+    marginTop: theme.spacing(1),
+  },
+
+  icon:{
+    marginRight: theme.spacing(1),
+  },
+  runningSmallIcon: {
+    animation: 'runningSmallNodeSpinAnimation 2s ease-in-out infinite',
+  },
+  '@global': {
+    '@keyframes runningSmallNodeSpinAnimation': {
+      from: {
+        transform: `rotate(0deg)`,
+      },
+      to: {
+        transform: `rotate(360deg)`,
+      },
+    },
+  },
 }));
 
 export default useStyles;

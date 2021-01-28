@@ -1,9 +1,37 @@
 import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    width: '100%',
+  // Header
+  headWrapper: {
+    width: '88%',
+    margin: theme.spacing(0.5, 'auto'),
+    [theme.breakpoints.up('lg')]: {
+      width: '87%',
+      margin: theme.spacing(2, 'auto'),
+    },
   },
+  header: {
+    fontSize: '2rem',
+    fontWeight: 400,
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '2.3rem',
+    },
+  },
+  headerButtonWrapper: {
+    display: 'flex',
+    width: '17%',
+    justifyContent: 'space-between',
+    [theme.breakpoints.up('lg')]: {
+      width: '11%',
+    },
+  },
+  bottomButtonWrapper: {
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+
+  // Stepper
   stepper: {
     backgroundColor: 'transparent',
     marginTop: theme.spacing(5),
@@ -81,6 +109,16 @@ const useStyles = makeStyles((theme: Theme) => ({
   successful: {
     fontSize: '2.2rem',
     fontWeight: 'bold',
+  },
+
+  // Bottom
+  bottomWrapper: {
+    width: '88%',
+    margin: theme.spacing(1, 'auto'),
+    [theme.breakpoints.up('lg')]: {
+      width: '87%',
+      margin: theme.spacing(2, 'auto'),
+    },
   },
 }));
 

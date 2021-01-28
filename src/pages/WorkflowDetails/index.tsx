@@ -22,6 +22,7 @@ import { RootState } from '../../redux/reducers';
 import ArgoWorkflow from '../../views/WorkflowDetails/ArgoWorkflow';
 import WorkflowNodeInfo from '../../views/WorkflowDetails/WorkflowNodeInfo';
 import useStyles from './styles';
+import NodeTable from '../../views/WorkflowDetails/workflowTable';
 
 const WorkflowDetails: React.FC = () => {
   const classes = useStyles();
@@ -36,9 +37,7 @@ const WorkflowDetails: React.FC = () => {
   const selectedProjectID = useSelector(
     (state: RootState) => state.userData.selectedProjectID
   );
-  const isInfoToggled = useSelector(
-    (state: RootState) => state.toggleInfoButton.isInfoToggled
-  );
+
   const workflowDetailsTabValue = useSelector(
     (state: RootState) => state.tabNumber.node
   );
@@ -114,6 +113,8 @@ const WorkflowDetails: React.FC = () => {
             <Typography className={classes.heading1}>
               Description of the workflow
             </Typography>
+
+            {/* AppBar */}
             <AppBar
               position="static"
               color="default"
@@ -127,13 +128,14 @@ const WorkflowDetails: React.FC = () => {
                     backgroundColor: theme.palette.secondary.dark,
                   },
                 }}
+                variant="fullWidth"
               >
                 <StyledTab label="Graph View" />
                 <StyledTab label="Table View" />
               </Tabs>
             </AppBar>
-            <div className={classes.graphView}>
-              <TabPanel value={workflowDetailsTabValue} index={0}>
+            <TabPanel value={workflowDetailsTabValue} index={0}>
+              <div className={classes.graphView}>
                 <div className={classes.workflowGraph}>
                   {/* Argo Workflow DAG Graph */}
                   <ArgoWorkflow
@@ -143,22 +145,26 @@ const WorkflowDetails: React.FC = () => {
                     }
                   />
                 </div>
-                <div className={classes.workflowDetails}>
-                  {/*Workflow Details and Experiment Logs */}
-                  <div className={classes.logsPanel} data-cy="browseWorkflow">
-                    <WorkflowNodeInfo
-                      workflow_name={workflow.workflow_name}
-                      cluster_id={workflow.cluster_id}
-                      workflow_run_id={workflow.workflow_run_id}
-                      pod_namespace={
-                        (JSON.parse(workflow.execution_data) as ExecutionData)
-                          .namespace
-                      }
-                    />
-                  </div>
-                </div>
-              </TabPanel>
-            </div>
+                {/*Workflow Details and Experiment Logs */}
+                <WorkflowNodeInfo
+                  workflow_name={workflow.workflow_name}
+                  cluster_id={workflow.cluster_id}
+                  workflow_run_id={workflow.workflow_run_id}
+                  pod_namespace={
+                    (JSON.parse(workflow.execution_data) as ExecutionData)
+                      .namespace
+                  }
+                />
+              </div>
+            </TabPanel>
+            <TabPanel value={workflowDetailsTabValue} index={1}>
+              <div className={classes.nodeTable}>
+                <NodeTable
+                  cluster_name={workflow.cluster_name}
+                  data={JSON.parse(workflow.execution_data) as ExecutionData}
+                />
+              </div>
+            </TabPanel>
           </div>
         ) : error ? (
           <Typography>{t('workflowDetails.fetchError')}</Typography>

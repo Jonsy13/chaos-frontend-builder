@@ -4,60 +4,49 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     margin: theme.spacing(3),
   },
-  graphView: {
-    padding: '0.5rem 0.5rem',
-    height: '100%',
-    marginTop: theme.spacing(3),
-    backgroundColor: theme.palette.modal.background
-  },
-  icon: {
-    margin: theme.spacing(-0.4, 1),
-    width: '1rem',
-  },
-  experimentDetails:{
-    width: '40%',
-  },
+
+  // Back Button
   button: {
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'space-between',
     margin: theme.spacing(4, 0, 0, 0),
   },
+
+  // WorkflowName Header
   heading: {
     margin: theme.spacing(2, 0, 0, 0),
     fontSize: '1.5rem',
     fontWeight: 'bold',
   },
+
+  // Second Heading
   heading1 :{
     margin: theme.spacing(2, 0, 0, 0),
     fontSize: '1rem',
   },
-  workflowGraph: {
-    height: '30vh',
-    width: '100%',
-  },
-  workflowDetails: {
-    // marginTop: "1rem",
-    display: 'flex',
-    width: '100%',
-    justifyContent: 'space-between',
-    backgroundColor: theme.palette.cards.background
-  },
-  loaderDiv: {
-    height: '100%',
-  },
+
+  // AppBar and Tabs
   appBar: {
     background: 'transparent',
     boxShadow: 'none',
-    display: 'flex',
-    flexDirection: 'column',
   },
-  btnOutline: {
-    height: '2.2rem',
+
+  // Graphical View
+  workflowGraph: {
+    height: '40vh',
+    width: '100%',
   },
-  logsPanel:{
-    width: "100%"
-  }
+
+  graphView: {
+    padding: '0.5rem 0.5rem',
+    height: '100%',
+    marginTop: theme.spacing(3),
+    marginLeft: theme.spacing(-1.5),
+    backgroundColor: theme.palette.modal.background
+  },
+
+  nodeTable: {
+    marginLeft: theme.spacing(-1.5),
+  },
+
 }));
 
 export default useStyles;

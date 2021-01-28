@@ -33,11 +33,11 @@ import { RootState } from '../../redux/reducers';
 import { validateWorkflowName } from '../../utils/validate';
 import parsed from '../../utils/yamlUtils';
 import ChooseWorkflow from '../../views/CreateWorkflow/ChooseWorkflow/index';
+import ChooseAWorkflowAgent from '../../views/CreateWorkflow/ChooseWorkflowAgent';
 import ReliablityScore from '../../views/CreateWorkflow/ReliabilityScore';
 import ScheduleWorkflow from '../../views/CreateWorkflow/ScheduleWorkflow';
 import TuneWorkflow from '../../views/CreateWorkflow/TuneWorkflow/index';
 import VerifyCommit from '../../views/CreateWorkflow/VerifyCommit';
-import ChooseAWorkflowCluster from '../../views/CreateWorkflow/WorkflowCluster';
 import { cronWorkflow, workflowOnce } from './templates';
 
 interface URLParams {
@@ -108,11 +108,9 @@ function getStepContent(
 ): React.ReactNode {
   switch (stepIndex) {
     case 0:
-      return (
-        <ChooseAWorkflowCluster gotoStep={(page: number) => gotoStep(page)} />
-      );
+      return <ChooseAWorkflowAgent />;
     case 1:
-      return <ChooseWorkflow isEditable={false} />;
+      return <ChooseWorkflow />;
     case 2:
       return <TuneWorkflow />;
     case 3:
@@ -127,9 +125,7 @@ function getStepContent(
         />
       );
     default:
-      return (
-        <ChooseAWorkflowCluster gotoStep={(page: number) => gotoStep(page)} />
-      );
+      return <ChooseAWorkflowAgent />;
   }
 }
 
@@ -448,7 +444,7 @@ const EditScheduledWorkflow = () => {
       {loading ? (
         <Loader />
       ) : (
-        <div className={classes.root}>
+        <div>
           <Stepper
             activeStep={activeStep}
             connector={<QontoConnector />}

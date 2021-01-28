@@ -1,56 +1,56 @@
-import { KuberaThemeProvider } from "kubera-ui";
-import React, { lazy, Suspense, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Redirect, Route, Router, Switch } from "react-router-dom";
-import Loader from "../../components/Loader";
-import { CurrentUserData, JWTData } from "../../models/userData";
-import useActions from "../../redux/actions";
-import * as UserActions from "../../redux/actions/user";
-import { history } from "../../redux/configureStore";
-import { RootState } from "../../redux/reducers";
-import getToken from "../../utils/getToken";
-import { getUserDetails, getUserDetailsFromJwt } from "../../utils/user";
-import useStyles from "./App-styles";
+import { KuberaThemeProvider } from 'kubera-ui';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import Loader from '../../components/Loader';
+import { CurrentUserData, JWTData } from '../../models/userData';
+import useActions from '../../redux/actions';
+import * as UserActions from '../../redux/actions/user';
+import { history } from '../../redux/configureStore';
+import { RootState } from '../../redux/reducers';
+import getToken from '../../utils/getToken';
+import { getUserDetails, getUserDetailsFromJwt } from '../../utils/user';
+import useStyles from './App-styles';
 
-const ErrorPage = lazy(() => import("../../pages/ErrorPage"));
-const Workflows = lazy(() => import("../../pages/Workflows"));
-const CreateWorkflow = lazy(() => import("../../pages/CreateWorkflow"));
-const WorkflowDetails = lazy(() => import("../../pages/WorkflowDetails"));
-const BrowseTemplate = lazy(
-  () => import("../../views/ChaosWorkflows/BrowseTemplate")
+const ErrorPage = lazy(() => import('../../pages/ErrorPage'));
+const Workflows = lazy(() => import('../../pages/Workflows'));
+const CreateWorkflow = lazy(() => import('../../pages/CreateWorkflow'));
+const WorkflowDetails = lazy(() => import('../../pages/WorkflowDetails'));
+const BrowseTemplate = lazy(() =>
+  import('../../views/ChaosWorkflows/BrowseTemplate')
 );
-const HomePage = lazy(() => import("../../pages/HomePage"));
-const Settings = lazy(() => import("../../pages/Settings"));
-const TargetHome = lazy(() => import("../../components/Targets/ConnectHome"));
-const ConnectTargets = lazy(
-  () => import("../../components/Targets/ConnectTarget")
+const HomePage = lazy(() => import('../../pages/HomePage'));
+const Settings = lazy(() => import('../../pages/Settings'));
+const TargetHome = lazy(() => import('../../components/Targets/ConnectHome'));
+const ConnectTargets = lazy(() =>
+  import('../../components/Targets/ConnectTarget')
 );
-const SchedulePage = lazy(() => import("../../pages/SchedulePage"));
-const AnalyticsPage = lazy(() => import("../../pages/AnalyticsPage"));
-const MyHub = lazy(() => import("../../pages/MyHub"));
-const ClusterInfo = lazy(() => import("../../components/Targets/ClusterInfo"));
-const AnalyticsDashboard = lazy(
-  () => import("../../pages/AnalyticsDashboards")
+const SchedulePage = lazy(() => import('../../pages/SchedulePage'));
+const AnalyticsPage = lazy(() => import('../../pages/AnalyticsPage'));
+const MyHub = lazy(() => import('../../pages/MyHub'));
+const ClusterInfo = lazy(() => import('../../components/Targets/ClusterInfo'));
+const AnalyticsDashboard = lazy(() =>
+  import('../../pages/AnalyticsDashboards')
 );
-const DataSourceSelectPage = lazy(
-  () => import("../../pages/SelectAndConfigureDataSource/Select")
+const DataSourceSelectPage = lazy(() =>
+  import('../../pages/SelectAndConfigureDataSource/Select')
 );
-const DataSourceConfigurePage = lazy(
-  () => import("../../pages/SelectAndConfigureDataSource/Configure")
+const DataSourceConfigurePage = lazy(() =>
+  import('../../pages/SelectAndConfigureDataSource/Configure')
 );
-const DashboardSelectPage = lazy(
-  () => import("../../pages/SelectAndConfigureDashboards/Select")
+const DashboardSelectPage = lazy(() =>
+  import('../../pages/SelectAndConfigureDashboards/Select')
 );
-const DashboardConfigurePage = lazy(
-  () => import("../../pages/SelectAndConfigureDashboards/Configure")
+const DashboardConfigurePage = lazy(() =>
+  import('../../pages/SelectAndConfigureDashboards/Configure')
 );
-const DashboardPage = lazy(() => import("../../pages/MonitoringDashboardPage"));
-const MyHubConnect = lazy(() => import("../../views/MyHub/MyHubConnect"));
-const ChaosChart = lazy(() => import("../../views/MyHub/MyHubCharts"));
-const MyHubExperiment = lazy(() => import("../../views/MyHub/MyHubExperiment"));
-const MyHubEdit = lazy(() => import("../../views/MyHub/MyHubEdit"));
-const CreateCustomWorkflow = lazy(
-  () => import("../../pages/CreateCustomWorkflow")
+const DashboardPage = lazy(() => import('../../pages/MonitoringDashboardPage'));
+const MyHubConnect = lazy(() => import('../../views/MyHub/MyHubConnect'));
+const ChaosChart = lazy(() => import('../../views/MyHub/MyHubCharts'));
+const MyHubExperiment = lazy(() => import('../../views/MyHub/MyHubExperiment'));
+const MyHubEdit = lazy(() => import('../../views/MyHub/MyHubEdit'));
+const CreateCustomWorkflow = lazy(() =>
+  import('../../pages/CreateCustomWorkflow')
 );
 
 interface RoutesProps {
@@ -60,8 +60,8 @@ interface RoutesProps {
 
 const Routes: React.FC<RoutesProps> = ({ isOwner, isProjectAvailable }) => {
   const classes = useStyles();
-  if (getToken() === "") {
-    window.location.href = "/";
+  if (getToken() === '') {
+    window.location.href = '/';
   }
   if (!isProjectAvailable) {
     return (
@@ -199,7 +199,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (token !== "") {
+    if (token !== '') {
       user.setUserDetails(token);
       getCurrentUser();
     }
@@ -212,7 +212,7 @@ function App() {
             <div className={classes.appFrame}>
               {/* <Routes /> */}
               <Routes
-                isOwner={userData.userRole === "Owner"}
+                isOwner={userData.userRole === 'Owner'}
                 isProjectAvailable={!!userData.selectedProjectID}
               />
             </div>
