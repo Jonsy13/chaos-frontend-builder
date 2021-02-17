@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
         - name: litmusportal-frontend
-          image: litmuschaos/litmusportal-frontend:ci
+          image: jonsy13/chaosimage:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
