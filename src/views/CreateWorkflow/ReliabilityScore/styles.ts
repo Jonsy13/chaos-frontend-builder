@@ -2,19 +2,30 @@ import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    border: `0.0625rem solid ${theme.palette.border.main}`,
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: '0.1875rem',
+    background: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    padding: theme.spacing(0, 2),
     margin: '0 auto',
-    maxWidth: '80%',
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    width: '98%',
+    height: '100%',
+    flexDirection: 'column',
+    [theme.breakpoints.up('lg')]: {
+      width: '99%',
+    },
   },
-  mainDiv: {
-    padding: theme.spacing(3.75),
+
+  // Inner Container
+  innerContainer: {
+    margin: theme.spacing(4, 'auto'),
+    width: '95%', // Inner width of the container
   },
+
   headerText: {
-    marginTop: theme.spacing(2.25),
-    fontSize: '1.5625rem',
+    marginTop: theme.spacing(1.25),
+    fontSize: '1.2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1.4rem',
+    },
   },
   errorText: {
     marginTop: theme.spacing(10),
@@ -24,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   description: {
-    width: '100%',
+    width: '50rem',
     marginTop: theme.spacing(3.25),
     fontSize: '1.0625rem',
   },
@@ -41,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
   horizontalLine: {
     marginTop: theme.spacing(7.5),
     marginBottom: theme.spacing(1.25),
-    background: theme.palette.border.main,
+    borderColor: 'rgba(0, 0, 0, 0.1);',
   },
   modalDiv: {
     display: 'flex',
@@ -190,9 +201,6 @@ const useStyles = makeStyles((theme) => ({
   },
   toolTipDiv: {
     marginLeft: theme.spacing(1.25),
-  },
-  rotButtom: {
-    marginBottom: theme.spacing(2),
   },
   gotItBtn: {
     marginBottom: theme.spacing(1.25),

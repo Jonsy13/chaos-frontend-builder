@@ -1,7 +1,10 @@
 export interface Member {
-  user_uid: string;
+  user_id: string;
+  user_name: string;
   role: string;
   invitation: string;
+  name: string;
+  email: string;
   joined_at: string;
 }
 
@@ -11,6 +14,21 @@ export interface Project {
   id: string;
 }
 
+export interface UserDetails {
+  username: string;
+  projects: Project[];
+  name: string;
+  email: string;
+  id: string;
+  company_name: string;
+  updated_at: string;
+  created_at: string;
+  removed_at: string;
+  is_email_verified: string;
+  state: string;
+  role: string;
+}
+
 export interface MyHubDetail {
   id: string;
   HubName: string;
@@ -18,16 +36,28 @@ export interface MyHubDetail {
   RepoURL: string;
 }
 
-export interface Projects {
-  getProjects: Project[];
+export interface CurrentUserDetails {
+  getUser: UserDetails;
 }
 
-export interface ProjectDetail {
-  getProject: Project;
+export interface CurrentUserDedtailsVars {
+  username: string;
 }
 
-export interface ProjectDetailVars {
-  projectID: string;
+export interface CreateUserData {
+  username: string;
+  email: string;
+  name: string;
+  userID: string;
+  role: string;
+}
+
+export interface UpdateUser {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export interface SSHKey {
@@ -72,4 +102,33 @@ export enum MyHubType {
   basic = 'basic',
   token = 'token',
   ssh = 'ssh',
+  none = 'none',
+}
+
+export interface Projects {
+  listProjects: Project[];
+}
+
+export interface ProjectDetail {
+  getProject: Project;
+}
+
+export interface ProjectDetailVars {
+  projectID: string;
+}
+
+export enum Role {
+  viewer = 'Viewer',
+  editor = 'Editor',
+  owner = 'Owner',
+}
+
+export enum UserRole {
+  admin = 'admin',
+  user = 'user',
+}
+
+export enum InvitationStatus {
+  PENDING = 'Pending',
+  ACCEPTED = 'Accepted',
 }

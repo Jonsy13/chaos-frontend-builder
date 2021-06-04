@@ -1,225 +1,283 @@
-import { KuberaThemeProvider } from 'kubera-ui';
-import React, { lazy, Suspense, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useQuery } from '@apollo/client';
+import { LitmusThemeProvider } from 'litmus-ui';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import Loader from '../../components/Loader';
-import { CurrentUserData, JWTData } from '../../models/userData';
+import { GET_PROJECT, LIST_PROJECTS } from '../../graphql';
+import { Member, ProjectDetail, Projects } from '../../models/graphql/user';
 import useActions from '../../redux/actions';
-import * as UserActions from '../../redux/actions/user';
+import * as AnalyticsActions from '../../redux/actions/analytics';
 import { history } from '../../redux/configureStore';
-import { RootState } from '../../redux/reducers';
-import getToken from '../../utils/getToken';
-import { getUserDetails, getUserDetailsFromJwt } from '../../utils/user';
-import useStyles from './App-styles';
+import { getToken, getUserId } from '../../utils/auth';
+import { getProjectID, getProjectRole } from '../../utils/getSearchParams';
+import Center from '../layouts/Center';
 
 const ErrorPage = lazy(() => import('../../pages/ErrorPage'));
 const Workflows = lazy(() => import('../../pages/Workflows'));
 const CreateWorkflow = lazy(() => import('../../pages/CreateWorkflow'));
+const LoginPage = lazy(() => import('../../pages/LoginPage'));
+const GetStarted = lazy(() => import('../../pages/GetStartedPage'));
 const WorkflowDetails = lazy(() => import('../../pages/WorkflowDetails'));
-const BrowseTemplate = lazy(() =>
-  import('../../views/ChaosWorkflows/BrowseTemplate')
+const BrowseTemplate = lazy(
+  () => import('../../views/ChaosWorkflows/BrowseTemplate')
 );
 const HomePage = lazy(() => import('../../pages/HomePage'));
+const Community = lazy(() => import('../../pages/Community'));
 const Settings = lazy(() => import('../../pages/Settings'));
-const TargetHome = lazy(() => import('../../components/Targets/ConnectHome'));
-const ConnectTargets = lazy(() =>
-  import('../../components/Targets/ConnectTarget')
+const Targets = lazy(() => import('../../pages/Targets'));
+const EditSchedule = lazy(() => import('../../pages/EditSchedule'));
+const SetNewSchedule = lazy(() => import('../../pages/EditSchedule/Schedule'));
+const ConnectTargets = lazy(() => import('../../pages/ConnectTarget'));
+const AnalyticsPage = lazy(() => import('../../pages/WorkflowAnalytics'));
+const AnalyticsDashboard = lazy(() => import('../../pages/AnalyticsPage'));
+const DataSourceSelectPage = lazy(
+  () => import('../../pages/SelectAndConfigureDataSource/Select')
 );
-const SchedulePage = lazy(() => import('../../pages/SchedulePage'));
-const AnalyticsPage = lazy(() => import('../../pages/AnalyticsPage'));
-const MyHub = lazy(() => import('../../pages/MyHub'));
-const ClusterInfo = lazy(() => import('../../components/Targets/ClusterInfo'));
-const AnalyticsDashboard = lazy(() =>
-  import('../../pages/AnalyticsDashboards')
+const DataSourceConfigurePage = lazy(
+  () => import('../../pages/SelectAndConfigureDataSource/Configure')
 );
-const DataSourceSelectPage = lazy(() =>
-  import('../../pages/SelectAndConfigureDataSource/Select')
+const DashboardSelectPage = lazy(
+  () => import('../../pages/SelectAndConfigureDashboards/Select')
 );
-const DataSourceConfigurePage = lazy(() =>
-  import('../../pages/SelectAndConfigureDataSource/Configure')
+const DashboardConfigurePage = lazy(
+  () => import('../../pages/SelectAndConfigureDashboards/Configure')
 );
-const DashboardSelectPage = lazy(() =>
-  import('../../pages/SelectAndConfigureDashboards/Select')
-);
-const DashboardConfigurePage = lazy(() =>
-  import('../../pages/SelectAndConfigureDashboards/Configure')
-);
-const DashboardPage = lazy(() => import('../../pages/MonitoringDashboardPage'));
-const MyHubConnect = lazy(() => import('../../views/MyHub/MyHubConnect'));
+const DashboardPage = lazy(() => import('../../pages/ApplicationDashboard'));
+const MyHub = lazy(() => import('../../pages/ChaosHub'));
 const ChaosChart = lazy(() => import('../../views/MyHub/MyHubCharts'));
 const MyHubExperiment = lazy(() => import('../../views/MyHub/MyHubExperiment'));
-const MyHubEdit = lazy(() => import('../../views/MyHub/MyHubEdit'));
-const CreateCustomWorkflow = lazy(() =>
-  import('../../pages/CreateCustomWorkflow')
-);
 
-interface RoutesProps {
-  isOwner: boolean;
-  isProjectAvailable: boolean;
-}
+const Routes: React.FC = () => {
+  const baseRoute = window.location.pathname.split('/')[1];
+  const projectIDFromURL = getProjectID();
+  const projectRoleFromURL = getProjectRole();
+  const [projectID, setprojectID] = useState<string>(projectIDFromURL);
+  const [projectRole, setprojectRole] = useState<string>(projectRoleFromURL);
+  const [isProjectMember, setIsProjectMember] = useState<boolean>(false);
+  const userID = getUserId();
 
-const Routes: React.FC<RoutesProps> = ({ isOwner, isProjectAvailable }) => {
-  const classes = useStyles();
+  const { loading } = useQuery<Projects>(LIST_PROJECTS, {
+    skip: projectID !== '' && projectID !== undefined,
+    onCompleted: (data) => {
+      if (data.listProjects) {
+        data.listProjects.forEach((project): void => {
+          project.members.forEach((member: Member): void => {
+            if (member.user_id === userID && member.role === 'Owner') {
+              setprojectID(project.id);
+              setprojectRole(member.role);
+              history.push({
+                pathname: `/${baseRoute}`,
+                search: `?projectID=${project.id}&projectRole=${member.role}`,
+              });
+            }
+          });
+        });
+      }
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  history.listen((location) => {
+    if (location.pathname !== '/login') {
+      setprojectID(getProjectID());
+      setprojectRole(getProjectRole());
+    }
+  });
+
+  const { loading: projectValidation } = useQuery<ProjectDetail>(GET_PROJECT, {
+    variables: { projectID },
+    onCompleted: (data) => {
+      if (data?.getProject) {
+        data.getProject.members.forEach((member: Member) => {
+          if (member.user_id === userID) {
+            setIsProjectMember(true);
+            setprojectID(data.getProject.id);
+            setprojectRole(member.role);
+          }
+        });
+        if (!isProjectMember) {
+          setprojectID('');
+          setprojectRole('');
+        }
+      }
+    },
+    onError: () => {
+      if (!isProjectMember) {
+        setprojectID('');
+        setprojectRole('');
+      }
+    },
+  });
+
   if (getToken() === '') {
-    window.location.href = '/';
-  }
-  if (!isProjectAvailable) {
     return (
-      <div className={classes.content}>
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route path="/" render={() => <Redirect to="/" />} />
-        </Switch>
-      </div>
+      <>
+        {loading ? (
+          <Loader />
+        ) : (
+          <Switch>
+            <Route exact path="/login" component={LoginPage} />
+            <Redirect exact path="/api-doc" to="/api-doc/index.html" />
+            <Redirect to="/login" />
+          </Switch>
+        )}
+      </>
+    );
+  }
+
+  if (!projectID) {
+    return (
+      <>
+        {loading ? (
+          <Loader />
+        ) : (
+          <Switch>
+            <Route exact path="/getStarted" component={GetStarted} />
+            <Redirect exact path="/api-doc" to="/api-doc/index.html" />
+          </Switch>
+        )}
+      </>
     );
   }
 
   return (
-    <div className={classes.content}>
-      <Switch>
-        <Route exact path="/" component={HomePage} />
-        <Route exact path="/workflows" component={Workflows} />
-        <Route exact path="/analytics" component={AnalyticsDashboard} />
-        <Route
-          exact
-          path="/analytics/datasource/select"
-          component={DataSourceSelectPage}
-        />
-        <Route
-          exact
-          path="/analytics/datasource/create"
-          component={() => <DataSourceConfigurePage configure={false} />}
-        />
-        <Route
-          exact
-          path="/analytics/datasource/configure"
-          component={() => <DataSourceConfigurePage configure />}
-        />
-        <Route
-          exact
-          path="/analytics/dashboard/select"
-          component={DashboardSelectPage}
-        />
-        <Route
-          exact
-          path="/analytics/dashboard/create"
-          component={() => <DashboardConfigurePage configure={false} />}
-        />
-        <Route
-          exact
-          path="/analytics/dashboard/configure"
-          component={() => <DashboardConfigurePage configure />}
-        />
-        <Route
-          exact
-          path="/analytics/dashboard"
-          component={() => <DashboardPage />}
-        />
-        <Route exact path="/create-workflow" component={CreateWorkflow} />
+    <>
+      {projectValidation && loading ? (
+        <Loader />
+      ) : (
+        <Switch>
+          <Route exact path="/home" component={HomePage} />
+          <Redirect exact path="/" to="/home" />
+          <Route exact path="/workflows" component={Workflows} />
+          <Route exact path="/analytics" component={AnalyticsDashboard} />
+          <Route
+            exact
+            path="/analytics/datasource/select"
+            component={DataSourceSelectPage}
+          />
+          <Route
+            exact
+            path="/analytics/datasource/create"
+            component={() => <DataSourceConfigurePage configure={false} />}
+          />
+          <Route
+            exact
+            path="/analytics/datasource/configure"
+            component={() => <DataSourceConfigurePage configure />}
+          />
+          <Route
+            exact
+            path="/analytics/dashboard/select"
+            component={DashboardSelectPage}
+          />
+          <Route
+            exact
+            path="/analytics/dashboard/create"
+            component={() => <DashboardConfigurePage configure={false} />}
+          />
+          <Route
+            exact
+            path="/analytics/dashboard/configure"
+            component={() => <DashboardConfigurePage configure />}
+          />
+          <Route
+            exact
+            path="/analytics/application-dashboard"
+            component={() => <DashboardPage />}
+          />
+          <Route exact path="/create-workflow" component={CreateWorkflow} />
 
-        {/* Redirects */}
-        <Redirect exact path="/login" to="/" />
-        <Redirect exact path="/workflows/schedule" to="/workflows" />
-        <Redirect exact path="/workflows/template" to="/workflows" />
-        <Redirect exact path="/workflows/analytics" to="/workflows" />
+          <Route
+            exact
+            path="/workflows/:workflowRunId"
+            component={WorkflowDetails}
+          />
+          <Route
+            exact
+            path="/workflows/schedule/:scheduleProjectID/:workflowName"
+            component={EditSchedule}
+          />
+          <Route
+            exact
+            path="/workflows/schedule/:scheduleProjectID/:workflowName/set"
+            component={SetNewSchedule}
+          />
+          <Route
+            exact
+            path="/workflows/template/:templateName"
+            component={BrowseTemplate}
+          />
+          <Route
+            exact
+            path="/workflows/analytics/:workflowRunId"
+            component={AnalyticsPage}
+          />
+          <Route exact path="/community" component={Community} />
+          <Route exact path="/targets" component={Targets} />
+          <Route exact path="/target-connect" component={ConnectTargets} />
+          <Route exact path="/myhub" component={MyHub} />
+          <Route exact path="/myhub/:hubname" component={ChaosChart} />
+          <Route
+            exact
+            path="/myhub/:hubname/:chart/:experiment"
+            component={MyHubExperiment}
+          />
+          {projectRole === 'Owner' ? (
+            <Route path="/settings" component={Settings} />
+          ) : (
+            <Redirect
+              to={{
+                pathname: '/home',
+                search: `?projectID=${projectID}&projectRole=${projectRole}`,
+              }}
+            />
+          )}
+          <Route exact path="/404" component={ErrorPage} />
 
-        <Redirect exact path="/analytics/overview" to="/analytics" />
-        <Redirect exact path="/analytics/litmusdashboard" to="/analytics" />
-        <Redirect exact path="/analytics/kubernetesdashborad" to="/analytics" />
-        <Redirect exact path="/analytics/datasource" to="/analytics" />
+          {/* Redirects */}
+          <Redirect exact path="/getStarted" to="/home" />
+          <Redirect exact path="/workflows/schedule" to="/workflows" />
+          <Redirect exact path="/workflows/template" to="/workflows" />
 
-        <Route
-          exact
-          path="/workflows/:workflowRunId"
-          component={WorkflowDetails}
-        />
-        <Route
-          exact
-          path="/workflows/schedule/:projectId/:workflowName"
-          component={SchedulePage}
-        />
-        <Route
-          exact
-          path="/workflows/template/:templateName"
-          component={BrowseTemplate}
-        />
-        <Route
-          exact
-          path="/workflows/analytics/:workflowRunId"
-          component={AnalyticsPage}
-        />
-
-        <Route exact path="/myhub" component={MyHub} />
-        <Route exact path="/agents" component={TargetHome} />
-        <Route exact path="/agents/cluster" component={ClusterInfo} />
-        <Route exact path="/agent-connect" component={ConnectTargets} />
-        <Route exact path="/myhub" component={MyHub} />
-        <Route exact path="/myhub/connect" component={MyHubConnect} />
-        <Route exact path="/myhub/:hubname" component={ChaosChart} />
-        <Route exact path="/myhub/edit/:hubname" component={MyHubEdit} />
-        <Route
-          exact
-          path="/myhub/:hubname/:chart/:experiment"
-          component={MyHubExperiment}
-        />
-        <Route
-          exact
-          path="/create-workflow/custom"
-          component={CreateCustomWorkflow}
-        />
-        {isOwner ? (
-          <Route exact path="/settings" component={Settings} />
-        ) : (
-          <Redirect to="/" />
-        )}
-        <Route exact path="/404" component={ErrorPage} />
-        <Redirect to="/404" />
-      </Switch>
-    </div>
+          <Redirect exact path="/analytics/overview" to="/analytics" />
+          <Redirect exact path="/analytics/litmusdashboard" to="/analytics" />
+          <Redirect
+            exact
+            path="/analytics/kubernetesdashborad"
+            to="/analytics"
+          />
+          <Redirect exact path="/analytics/datasource" to="/analytics" />
+          <Redirect exact path="/api-doc" to="/api-doc/index.html" />
+          <Redirect to="/404" />
+        </Switch>
+      )}
+    </>
   );
 };
 
 function App() {
-  const classes = useStyles();
-  const userData = useSelector((state: RootState) => state.userData);
-  const user = useActions(UserActions);
+  const analyticsAction = useActions(AnalyticsActions);
   const token = getToken();
-
-  const userDetails: JWTData = getUserDetailsFromJwt(getToken());
-
-  async function getCurrentUser() {
-    const userDetail: CurrentUserData = await getUserDetails(
-      userDetails.uid
-    ).then((data) => data);
-    user.updateUserDetails({
-      username: userDetail.username,
-      name: userDetail.name,
-      email: userDetail.email,
-    });
-  }
-
   useEffect(() => {
     if (token !== '') {
-      user.setUserDetails(token);
-      getCurrentUser();
+      analyticsAction.loadCommunityAnalytics();
     }
   }, [token]);
   return (
-    <KuberaThemeProvider platform="kubera-chaos">
-      <Suspense fallback={<Loader />}>
+    <LitmusThemeProvider>
+      <Suspense
+        fallback={
+          <Center>
+            <Loader />
+          </Center>
+        }
+      >
         <Router history={history}>
-          <div className={classes.root}>
-            <div className={classes.appFrame}>
-              {/* <Routes /> */}
-              <Routes
-                isOwner={userData.userRole === 'Owner'}
-                isProjectAvailable={!!userData.selectedProjectID}
-              />
-            </div>
-          </div>
+          {/* <Routes /> */}
+          <Routes />
         </Router>
       </Suspense>
-    </KuberaThemeProvider>
+    </LitmusThemeProvider>
   );
 }
 

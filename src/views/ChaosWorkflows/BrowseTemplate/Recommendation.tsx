@@ -22,7 +22,7 @@ const Recommendation: React.FC<RecommendationProps> = ({ recommendation }) => {
           </Typography>
         </div>
       </div>
-      <img src="./icons/like.svg" alt="Like" className={classes.bgIcon} />
+      <img src="/icons/like.svg" alt="Like" className={classes.bgIcon} />
     </div>
   );
 };

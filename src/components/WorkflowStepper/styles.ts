@@ -1,14 +1,17 @@
 import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  // Header
-  headWrapper: {
-    width: '88%',
-    margin: theme.spacing(0.5, 'auto'),
+  root: {
+    width: '97.5%',
+    margin: '0 auto',
     [theme.breakpoints.up('lg')]: {
-      width: '87%',
+      width: '98%',
       margin: theme.spacing(2, 'auto'),
     },
+  },
+  // Header
+  headWrapper: {
+    margin: theme.spacing(0.5, 'auto'),
   },
   header: {
     fontSize: '2rem',
@@ -19,11 +22,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   headerButtonWrapper: {
     display: 'flex',
-    width: '17%',
+    width: '10rem',
     justifyContent: 'space-between',
-    [theme.breakpoints.up('lg')]: {
-      width: '11%',
-    },
   },
   bottomButtonWrapper: {
     display: 'flex',
@@ -39,6 +39,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   backButton: {
     marginRight: theme.spacing(1),
+  },
+  btn: {
+    fontSize: '0.8rem',
   },
   buttonGroup: {
     display: 'flex',
@@ -60,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
   normalLabel: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.horizontalStepper.pending,
     fontSize: theme.spacing(1.5),
     marginTop: theme.spacing(-9),
     [theme.breakpoints.down('sm')]: {
@@ -68,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
   completedLabel: {
-    color: theme.palette.primary.light,
+    color: theme.palette.horizontalStepper.completed,
     fontSize: theme.spacing(1.5),
     marginTop: theme.spacing(-9),
     [theme.breakpoints.down('sm')]: {

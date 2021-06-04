@@ -2,51 +2,46 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    margin: theme.spacing(3),
+    margin: '0 auto',
   },
 
   // Back Button
   button: {
-    margin: theme.spacing(4, 0, 0, 0),
+    margin: theme.spacing(0, 0, 0, -1),
   },
 
   // WorkflowName Header
-  heading: {
+  title: {
     margin: theme.spacing(2, 0, 0, 0),
     fontSize: '1.5rem',
     fontWeight: 'bold',
   },
 
   // Second Heading
-  heading1 :{
-    margin: theme.spacing(2, 0, 0, 0),
+  subtitle: {
     fontSize: '1rem',
+    margin: theme.spacing(2, 0, 0, 0),
   },
 
   // AppBar and Tabs
   appBar: {
     background: 'transparent',
     boxShadow: 'none',
+    marginBottom: theme.spacing(1),
   },
 
   // Graphical View
-  workflowGraph: {
-    height: '40vh',
-    width: '100%',
-  },
-
   graphView: {
-    padding: '0.5rem 0.5rem',
-    height: '100%',
-    marginTop: theme.spacing(3),
-    marginLeft: theme.spacing(-1.5),
-    backgroundColor: theme.palette.modal.background
+    display: 'flex',
+    flexDirection: 'column',
+    height: '65vh',
+    backgroundColor: theme.palette.cards.header,
   },
 
-  nodeTable: {
-    marginLeft: theme.spacing(-1.5),
+  infoDashboard: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(2),
   },
-
 }));
 
 export default useStyles;

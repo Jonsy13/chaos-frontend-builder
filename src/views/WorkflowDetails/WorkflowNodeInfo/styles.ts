@@ -2,64 +2,67 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
+    minHeight: '21.75rem',
     width: '100%',
+    backgroundColor: theme.palette.cards.background,
+    padding: theme.spacing(4),
+  },
+
+  header: {
+    height: '1.688rem',
     display: 'flex',
     justifyContent: 'space-between',
-    backgroundColor: theme.palette.cards.background,
-    padding: '1rem 1rem',
   },
-  bold: {
-    fontSize: '1rem',
-    fontWeight: 500,
+
+  title: {
+    fontSize: '1.5rem',
+    margin: 'auto,0',
   },
-  header: {
-    color: theme.palette.secondary.dark,
-  },
-  nodeDetails: {
-    width: '40%',
-  },
-  heightMaintainer: {
-    marginTop: theme.spacing(2),
+
+  section: {
     display: 'flex',
-    lineHeight: '2rem',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+  },
+
+  leftPanel: {
+    margin: theme.spacing(3, 2, 0, 0),
+    maxWidth: '30%',
+  },
+
+  rightPanel: {
+    width: '70%',
+    height: '14.125rem',
+  },
+
+  subSection: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    margin: theme.spacing(0, 0, 1, 0),
   },
 
   textMargin: {
-    display: 'flex',
-    lineHeight: '2rem',
-    justifyContent: 'space-between',
-    margin: theme.spacing(0,0,1,0)
+    fontSize: '0.75rem',
+    margin: theme.spacing(1, 0),
   },
 
-  text: {
-    fontSize: '1rem',
+  buttonAlign: {
+    paddingLeft: theme.spacing(0),
+    color: theme.palette.text.primary,
+    fontSize: '1.125rem',
   },
 
-  status: {
-    display: 'flex',
-  },
-
-  marginTop:{
-    display: 'flex',
-    marginTop: theme.spacing(1),
-  },
-
-  icon:{
+  icon: {
     marginRight: theme.spacing(1),
   },
-  runningSmallIcon: {
-    animation: 'runningSmallNodeSpinAnimation 2s ease-in-out infinite',
+
+  runningStatusText: {
+    color: theme.palette.highlight,
   },
-  '@global': {
-    '@keyframes runningSmallNodeSpinAnimation': {
-      from: {
-        transform: `rotate(0deg)`,
-      },
-      to: {
-        transform: `rotate(360deg)`,
-      },
-    },
+
+  closeButton: {
+    borderColor: theme.palette.border.main,
+    float: 'right',
+    height: '0.451rem',
   },
 }));
 

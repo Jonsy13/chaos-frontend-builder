@@ -1,28 +1,12 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable prefer-destructuring */
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { Typography } from '@material-ui/core';
+import { ButtonFilled, ButtonOutlined, Modal } from 'litmus-ui';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
-import YAML from 'yaml';
-import { Modal, ButtonOutlined } from 'kubera-ui';
-import ButtonFilled from '../../components/Button/ButtonFilled';
 import DashboardList from '../../components/PreconfiguredDashboards/data';
 import Scaffold from '../../containers/layouts/Scaffold';
-import { SCHEDULE_DETAILS } from '../../graphql';
 import { CREATE_DASHBOARD, UPDATE_DASHBOARD } from '../../graphql/mutations';
-import {
-  Artifact,
-  CronWorkflowYaml,
-  Parameter,
-  Template,
-  WorkflowYaml,
-} from '../../models/chaosWorkflowYaml';
-import {
-  ChaosEngineNamesAndNamespacesMap,
-  DashboardDetails,
-} from '../../models/dashboardsData';
+import { DashboardDetails } from '../../models/dashboardsData';
 import {
   CreateDashboardInput,
   Panel,
@@ -31,20 +15,15 @@ import {
   UpdateDashboardInput,
   updatePanelGroupInput,
 } from '../../models/graphql/dashboardsDetails';
-import {
-  ScheduleDataVars,
-  Schedules,
-  ScheduleWorkflow,
-} from '../../models/graphql/scheduleData';
 import { history } from '../../redux/configureStore';
 import { RootState } from '../../redux/reducers';
 import { ReactComponent as CrossMarkIcon } from '../../svg/crossmark.svg';
-import { validateWorkflowParameter } from '../../utils/validate';
+import { getProjectID, getProjectRole } from '../../utils/getSearchParams';
+import ConfigureDashboard from '../../views/Analytics/ApplicationDashboards/Form';
 import {
-  generateChaosQuery,
-  getWorkflowParameter,
-} from '../../utils/yamlUtils';
-import ConfigureDashboard from '../../views/AnalyticsDashboard/KubernetesDashboards/Form';
+  DEFAULT_DASHBOARD_REFRESH_RATE_STRING,
+  DEFAULT_RELATIVE_TIME_RANGE,
+} from '../ApplicationDashboard/constants';
 import useStyles from './styles';
 
 interface DashboardConfigurePageProps {
@@ -55,9 +34,8 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
   configure,
 }) => {
   const classes = useStyles();
-  const selectedProjectID = useSelector(
-    (state: RootState) => state.userData.selectedProjectID
-  );
+  const projectID = getProjectID();
+  const projectRole = getProjectRole();
   const dashboardID = useSelector(
     (state: RootState) => state.selectDashboard.selectedDashboardID
   );
@@ -84,15 +62,6 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
   });
   const [mutate, setMutate] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
-
-  // Apollo query to get the scheduled data
-  const { data: workflowSchedules } = useQuery<Schedules, ScheduleDataVars>(
-    SCHEDULE_DETAILS,
-    {
-      variables: { projectID: selectedProjectID },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
 
   const [createDashboard] = useMutation<CreateDashboardInput>(
     CREATE_DASHBOARD,
@@ -125,115 +94,12 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
 
   const getPanelGroups = () => {
     if (configure === false) {
-      const chaosEngineNamesAndNamespacesMap: ChaosEngineNamesAndNamespacesMap[] = [];
-      workflowSchedules?.getScheduledWorkflows.forEach(
-        (schedule: ScheduleWorkflow) => {
-          if (
-            schedule.cluster_id === dashboardVars.agentID &&
-            !schedule.isRemoved
-          ) {
-            let workflowYaml: WorkflowYaml | CronWorkflowYaml;
-            let parametersMap: Parameter[];
-            let workflowYamlCheck: boolean = true;
-            try {
-              workflowYaml = JSON.parse(schedule.workflow_manifest);
-              parametersMap = (workflowYaml as WorkflowYaml).spec.arguments
-                .parameters;
-            } catch (err) {
-              workflowYaml = JSON.parse(schedule.workflow_manifest);
-              parametersMap = (workflowYaml as CronWorkflowYaml).spec
-                .workflowSpec.arguments.parameters;
-              workflowYamlCheck = false;
-            }
-            (workflowYamlCheck
-              ? (workflowYaml as WorkflowYaml).spec.templates
-              : (workflowYaml as CronWorkflowYaml).spec.workflowSpec.templates
-            ).forEach((template: Template) => {
-              if (template.inputs) {
-                template.inputs?.artifacts.forEach((artifact: Artifact) => {
-                  const parsedEmbeddedYaml = YAML.parse(artifact.raw.data);
-                  if (parsedEmbeddedYaml.kind === 'ChaosEngine') {
-                    let engineNamespace: string = '';
-                    if (
-                      typeof parsedEmbeddedYaml.metadata.namespace === 'string'
-                    ) {
-                      engineNamespace = (parsedEmbeddedYaml.metadata
-                        .namespace as string).substring(
-                        1,
-                        (parsedEmbeddedYaml.metadata.namespace as string)
-                          .length - 1
-                      );
-                    } else {
-                      engineNamespace = Object.keys(
-                        parsedEmbeddedYaml.metadata.namespace
-                      )[0];
-                    }
-                    if (validateWorkflowParameter(engineNamespace)) {
-                      engineNamespace = getWorkflowParameter(engineNamespace);
-                      parametersMap.forEach((parameterKeyValue: Parameter) => {
-                        if (parameterKeyValue.name === engineNamespace) {
-                          engineNamespace = parameterKeyValue.value;
-                        }
-                      });
-                    } else {
-                      engineNamespace = parsedEmbeddedYaml.metadata.namespace;
-                    }
-                    let matchIndex: number = -1;
-                    const check: number = chaosEngineNamesAndNamespacesMap.filter(
-                      (data, index) => {
-                        if (
-                          data.engineName ===
-                            parsedEmbeddedYaml.metadata.name &&
-                          data.engineNamespace === engineNamespace
-                        ) {
-                          matchIndex = index;
-                          return true;
-                        }
-                        return false;
-                      }
-                    ).length;
-                    if (check === 0) {
-                      chaosEngineNamesAndNamespacesMap.push({
-                        engineName: parsedEmbeddedYaml.metadata.name,
-                        engineNamespace,
-                        workflowName: workflowYaml.metadata.name,
-                      });
-                    } else {
-                      chaosEngineNamesAndNamespacesMap[
-                        matchIndex
-                      ].workflowName = `${chaosEngineNamesAndNamespacesMap[matchIndex].workflowName}, \n${workflowYaml.metadata.name}`;
-                    }
-                  }
-                });
-              }
-            });
-          }
-        }
-      );
-
       const panelGroups: PanelGroup[] = [];
       DashboardList[DashboardTemplateID ?? 0].panelGroups.forEach(
         (panelGroup) => {
           const selectedPanels: Panel[] = [];
           panelGroup.panels.forEach((panel) => {
-            const selectedPanel: Panel = panel;
-            chaosEngineNamesAndNamespacesMap.forEach((keyValue) => {
-              selectedPanel.prom_queries.push({
-                queryid: uuidv4(),
-                prom_query_name: generateChaosQuery(
-                  DashboardList[DashboardTemplateID ?? 0]
-                    .chaosEventQueryTemplate,
-                  keyValue.engineName,
-                  keyValue.engineNamespace
-                ),
-                legend: `${keyValue.workflowName}- \n${keyValue.engineName}`,
-                resolution: '1/1',
-                minstep: '1',
-                line: false,
-                close_area: true,
-              });
-            });
-            selectedPanels.push(selectedPanel);
+            selectedPanels.push(panel);
           });
           panelGroups.push({
             panel_group_name: panelGroup.panel_group_name,
@@ -262,10 +128,12 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
       db_type: dashboardVars.dashboardType,
       panel_groups: getPanelGroups(),
       end_time: `${Math.round(new Date().getTime() / 1000)}`,
-      start_time: `${Math.round(new Date().getTime() / 1000) - 1800}`,
-      project_id: selectedProjectID,
+      start_time: `${
+        Math.round(new Date().getTime() / 1000) - DEFAULT_RELATIVE_TIME_RANGE
+      }`,
+      project_id: projectID,
       cluster_id: dashboardVars.agentID,
-      refresh_rate: '5',
+      refresh_rate: DEFAULT_DASHBOARD_REFRESH_RATE_STRING,
     };
     createDashboard({
       variables: { createDBInput: dashboardInput },
@@ -280,8 +148,10 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
       db_type: dashboardVars.dashboardType,
       panel_groups: getPanelGroups(),
       end_time: `${Math.round(new Date().getTime() / 1000)}`,
-      start_time: `${Math.round(new Date().getTime() / 1000) - 1800}`,
-      refresh_rate: '5',
+      start_time: `${
+        Math.round(new Date().getTime() / 1000) - DEFAULT_RELATIVE_TIME_RANGE
+      }`,
+      refresh_rate: DEFAULT_DASHBOARD_REFRESH_RATE_STRING,
     };
     updateDashboard({
       variables: { updataDBInput: dashboardInput },
@@ -364,9 +234,9 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
           </div>
           <div className={classes.saveButton}>
             <ButtonFilled
-              isPrimary={false}
-              isDisabled={disabled}
-              handleClick={() => setMutate(true)}
+              disabled={disabled}
+              variant="success"
+              onClick={() => setMutate(true)}
             >
               <div>{'\u2713'} Save</div>
             </ButtonFilled>
@@ -376,6 +246,7 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
       <Modal
         open={open}
         onClose={() => setOpen(false)}
+        width="60%"
         modalActions={
           <ButtonOutlined
             className={classes.closeButton}
@@ -385,11 +256,11 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
           </ButtonOutlined>
         }
       >
-        <div>
+        <div className={classes.modal}>
           <Typography align="center">
             {success === true ? (
               <img
-                src="./icons/finish.svg"
+                src="/icons/finish.svg"
                 alt="success"
                 className={classes.icon}
               />
@@ -429,9 +300,13 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
 
           {success === true ? (
             <ButtonFilled
-              isPrimary={false}
-              isDisabled={false}
-              handleClick={() => history.push('/analytics')}
+              variant="success"
+              onClick={() => {
+                history.push({
+                  pathname: '/analytics',
+                  search: `?projectID=${projectID}&projectRole=${projectRole}`,
+                });
+              }}
             >
               <div>Back to Kubernetes Dashboard</div>
             </ButtonFilled>
@@ -448,10 +323,13 @@ const DashboardConfigurePage: React.FC<DashboardConfigurePageProps> = ({
               </ButtonOutlined>
 
               <ButtonFilled
-                isPrimary={false}
-                isWarning
-                isDisabled={false}
-                handleClick={() => history.push('/analytics')}
+                variant="error"
+                onClick={() => {
+                  history.push({
+                    pathname: '/analytics',
+                    search: `?projectID=${projectID}&projectRole=${projectRole}`,
+                  });
+                }}
               >
                 <div>Back to Kubernetes Dashboard</div>
               </ButtonFilled>

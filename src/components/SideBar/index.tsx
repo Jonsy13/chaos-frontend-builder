@@ -1,27 +1,22 @@
-/* eslint-disable no-return-assign */
-import { IconButton, Popover, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import AppsIcon from '@material-ui/icons/Apps';
-import ClearIcon from '@material-ui/icons/Clear';
 import moment from 'moment';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
-import useActions from '../../redux/actions';
-import * as TabActions from '../../redux/actions/tabs';
+import { useLocation } from 'react-router-dom';
 import { history } from '../../redux/configureStore';
-import { RootState } from '../../redux/reducers';
 import { ReactComponent as AnalyticsIcon } from '../../svg/analytics.svg';
+import { ReactComponent as CommunityIcon } from '../../svg/community.svg';
+import { ReactComponent as DocsIcon } from '../../svg/docs.svg';
 import { ReactComponent as HomeIcon } from '../../svg/home.svg';
 import { ReactComponent as MyHubIcon } from '../../svg/myhub.svg';
 import { ReactComponent as SettingsIcon } from '../../svg/settings.svg';
-import { ReactComponent as AgentsIcon } from '../../svg/targets.svg';
+import { ReactComponent as TargetsIcon } from '../../svg/targets.svg';
 import { ReactComponent as WorkflowsIcon } from '../../svg/workflows.svg';
+import { getProjectID, getProjectRole } from '../../utils/getSearchParams';
 import useStyles from './styles';
 
 interface CustomisedListItemProps {
@@ -52,31 +47,13 @@ const CustomisedListItem: React.FC<CustomisedListItemProps> = ({
 
 const SideBar: React.FC = () => {
   const classes = useStyles();
-  const userRole = useSelector((state: RootState) => state.userData.userRole);
-  const tabs = useActions(TabActions);
-  const { t } = useTranslation();
+  const projectID = getProjectID();
+  const projectRole = getProjectRole();
   const pathName = useLocation().pathname.split('/')[1];
   const version = process.env.REACT_APP_KB_CHAOS_VERSION;
   const buildTime = moment
     .unix(Number(process.env.REACT_APP_BUILD_TIME))
-    .format('DD MMM YYYY HH:mm:ss');
-
-  // set State
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
-
-  // Handle clicks
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+    .format('DD MMM YYYY HH:MM:SS');
 
   return (
     <Drawer
@@ -88,76 +65,17 @@ const SideBar: React.FC = () => {
       }}
       anchor="left"
     >
-      <div className={classes.appsDiv}>
-        <IconButton
-          onClick={handleClick}
-          classes={{
-            root: classes.iconButton,
-            label: `${open && classes.clearIconBackground}`,
-          }}
-        >
-          <div className={`${classes.appsIcon}`}>
-            {open ? (
-              <ClearIcon className={classes.iconColor} />
-            ) : (
-              <AppsIcon className={classes.iconColor} />
-            )}
-          </div>
-        </IconButton>
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-          className={classes.popOverPaper}
-        >
-          <div className={classes.popOverList}>
-            <List component="nav">
-              <ListItemText
-                className={classes.switchText}
-                primary={t('sidebar.switch')}
-              />
-              <ListItem button onClick={() => (window.location.href = '/')}>
-                <ListItemIcon>
-                  <img src="./icons/popoverKubera.svg" alt="Kubera Chaos" />
-                </ListItemIcon>
-              </ListItem>
-              <ListItem
-                button
-                onClick={() => (window.location.href = '/propel/')}
-              >
-                <ListItemIcon>
-                  <img src="./icons/popoverPropel.svg" alt="Kubera Propel" />
-                </ListItemIcon>
-              </ListItem>
-            </List>
-          </div>
-        </Popover>
-        <Link to="/" className={classes.homeLink}>
-          <img
-            className={classes.kuberaChaosLogo}
-            src="./icons/kuberaChaosWhiteLogo.svg"
-            alt="Kubera Chaos Logo"
-          />
-        </Link>
-      </div>
-
       <List className={classes.drawerList}>
         <CustomisedListItem
           key="home"
           handleClick={() => {
-            history.push('/');
+            history.push({
+              pathname: `/home`,
+              search: `?projectID=${projectID}&projectRole=${projectRole}`,
+            });
           }}
           label="Home"
-          selected={pathName === ''}
+          selected={pathName === 'home'}
         >
           <HomeIcon />
         </CustomisedListItem>
@@ -165,11 +83,13 @@ const SideBar: React.FC = () => {
           <CustomisedListItem
             key="workflow"
             handleClick={() => {
-              history.push('/workflows');
-              tabs.changeWorkflowsTabs(0);
+              history.push({
+                pathname: `/workflows`,
+                search: `?projectID=${projectID}&projectRole=${projectRole}`,
+              });
             }}
             label="Workflows"
-            selected={pathName === 'workflows'}
+            selected={['workflows', 'create-workflow'].includes(pathName)}
           >
             <WorkflowsIcon />
           </CustomisedListItem>
@@ -178,39 +98,51 @@ const SideBar: React.FC = () => {
           <CustomisedListItem
             key="myhub"
             handleClick={() => {
-              history.push('/myhub');
+              history.push({
+                pathname: `/myhub`,
+                search: `?projectID=${projectID}&projectRole=${projectRole}`,
+              });
             }}
-            label="My Hubs"
+            label="ChaosHubs"
             selected={pathName === 'myhub'}
           >
             <MyHubIcon />
           </CustomisedListItem>
         </div>
         <CustomisedListItem
-          key="agents"
+          key="targets"
           handleClick={() => {
-            history.push('/agents');
+            history.push({
+              pathname: `/targets`,
+              search: `?projectID=${projectID}&projectRole=${projectRole}`,
+            });
           }}
           label="Agents"
-          selected={pathName === 'agents'}
+          selected={['targets', 'target-connect'].includes(pathName)}
         >
-          <AgentsIcon />
+          <TargetsIcon />
         </CustomisedListItem>
         <CustomisedListItem
           key="analytics"
           handleClick={() => {
-            history.push('/analytics');
+            history.push({
+              pathname: `/analytics`,
+              search: `?projectID=${projectID}&projectRole=${projectRole}`,
+            });
           }}
           label="Analytics"
           selected={pathName === 'analytics'}
         >
           <AnalyticsIcon />
         </CustomisedListItem>
-        {userRole === 'Owner' && (
+        {projectRole === 'Owner' && (
           <CustomisedListItem
             key="settings"
             handleClick={() => {
-              history.push('/settings');
+              history.push({
+                pathname: `/settings`,
+                search: `?projectID=${projectID}&projectRole=${projectRole}`,
+              });
             }}
             label="Settings"
             selected={pathName === 'settings'}
@@ -218,27 +150,35 @@ const SideBar: React.FC = () => {
             <SettingsIcon />
           </CustomisedListItem>
         )}
+        <hr id="quickActions" />
+        <CustomisedListItem
+          key="litmusDocs"
+          handleClick={() => {
+            window.open('https://docs.litmuschaos.io/docs/getstarted');
+          }}
+          label="Litmus Docs"
+          selected={pathName === 'docs'}
+        >
+          <DocsIcon />
+        </CustomisedListItem>
+        <CustomisedListItem
+          key="community"
+          handleClick={() => {
+            history.push({
+              pathname: `/community`,
+              search: `?projectID=${projectID}&projectRole=${projectRole}`,
+            });
+          }}
+          label="Community"
+          selected={pathName === 'community'}
+        >
+          <CommunityIcon />
+        </CustomisedListItem>
       </List>
-      <div className={classes.info}>
-        <div className={classes.logodiv}>
-          <Typography>{t('sidebar.by')}</Typography>
-          <img
-            className={classes.mayadataLogo}
-            src="./icons/maya_data_logo.svg"
-            alt="MayaData Logo"
-          />
-        </div>
-        <br />
-
-        <div>
-          <Typography className={classes.versionAndBuildTimeText}>
-            <b>Version: </b> {version}
-          </Typography>
-          <Typography className={classes.versionAndBuildTimeText}>
-            <b>Build Time: </b> {buildTime}
-          </Typography>
-        </div>
-      </div>
+      <Typography className={classes.versionDiv}>
+        <b>Version: </b> {version} <br />
+        <b>Build Time: </b> {buildTime}
+      </Typography>
     </Drawer>
   );
 };

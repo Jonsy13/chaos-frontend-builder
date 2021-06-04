@@ -7,14 +7,14 @@ interface StyleProps {
 const useStyles = makeStyles((theme: Theme) => ({
   // Graph options
   graphOptions: {
-    color: theme.palette.text.primary,
+    color: theme.palette.text.disabled,
     display: 'flex',
     justifyContent: 'space-between',
     marginTop: theme.spacing(2),
   },
   layoutButton: {
     minWidth: 0,
-    borderColor: theme.palette.text.disabled,
+    borderColor: theme.palette.text.hint,
     marginRight: theme.spacing(2),
     '& svg': {
       fill: theme.palette.text.disabled,
@@ -24,7 +24,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   // Workflow Graph
   dagreGraph: {
     width: '100%',
-    height: '90%',
+    minHeight: '25%',
+    height: '100%',
     cursor: 'grab',
 
     // Styles for nodes
@@ -36,7 +37,7 @@ const useStyles = makeStyles((theme: Theme) => ({
           transform: (props: StyleProps) =>
             props.horizontal ? 'translate(0, 0)' : 'translate(0, -5px)',
           '& path': {
-            fill: theme.palette.text.secondary,
+            fill: theme.palette.common.white,
           },
         },
         '& text': {
@@ -59,69 +60,114 @@ const useStyles = makeStyles((theme: Theme) => ({
         transform: (props: StyleProps) =>
           `scale(1.5) translate(-5px, ${props.horizontal ? -5.5 : -2.5}px)`,
       },
+      '& path.errorIcon': {
+        transform: (props: StyleProps) =>
+          `scale(1.8) translate(-8px, ${props.horizontal ? -8.5 : -5.8}px)`,
+      },
+      '& path.omittedIcon': {
+        transform: (props: StyleProps) =>
+          `scale(1.8) translate(-8.5px, ${props.horizontal ? -9 : -6}px)`,
+      },
+      '& path.skippedIcon': {
+        transform: (props: StyleProps) =>
+          `scale(1.8) translate(-8px, ${props.horizontal ? -8 : -5}px)`,
+      },
       '& g.Succeeded': {
         '& circle': {
-          fill: theme.palette.status.completed.text,
+          fill: theme.palette.success.main,
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: theme.palette.success.main,
+          fill: 'none',
+          strokeWidth: '1.5',
         },
       },
       '& g.Running': {
         '& circle': {
-          fill: '#5252F6',
+          fill: theme.palette.highlight,
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: theme.palette.highlight,
+          fill: 'none',
+          strokeWidth: '1.5',
         },
       },
       '& g.Pending': {
         '& circle': {
-          fill: theme.palette.status.pending.text,
+          fill: theme.palette.horizontalStepper.completed,
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: theme.palette.horizontalStepper.completed,
+          fill: 'none',
+          strokeWidth: '1.5',
         },
       },
       '& g.Failed': {
         '& circle': {
           fill: theme.palette.status.failed.text,
         },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: theme.palette.status.failed.text,
+          fill: 'none',
+          strokeWidth: '1.5',
+        },
+      },
+      '& g.Omitted': {
+        '& circle': {
+          fill: '#A93DDB',
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: '#A93DDB',
+          fill: 'none',
+          strokeWidth: '1.5',
+        },
+      },
+      '& g.Skipped': {
+        '& circle': {
+          fill: '#0098DD',
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: '#0098DD',
+          fill: 'none',
+          strokeWidth: '1.5',
+        },
+      },
+      '& g.Error': {
+        '& circle': {
+          fill: '#FFA600',
+        },
+        '& circle.selected': {
+          strokeDasharray: '5,2',
+          stroke: '#FFA600',
+          fill: 'none',
+          strokeWidth: '1.5',
+        },
       },
       '& g.StepGroup': {
-        fill: theme.palette.status.pending.text,
+        fill: theme.palette.status.completed.text,
         cursor: 'default',
         '& rect': {
-          x: -1.5,
-          y: -1.5,
+          x: '-1.5px',
+          y: '-1.5px',
           width: '0.2rem',
           height: '0.2rem',
           rx: '0.625rem !important',
           ry: '0.625rem !important',
         },
       },
-      '& g.StepGroup.Succeeded': {
-        fill: theme.palette.status.completed.text,
-      },
-      '& g.StepGroup.Running': {
-        fill: theme.palette.status.running.text,
-      },
-      '& g.StepGroup.Pending': {
-        fill: theme.palette.status.pending.text,
-      },
-      '& g.StepGroup.Failed': {
-        fill: theme.palette.status.failed.text,
-      },
     },
 
     // Styles for edges
     '& g g.edgePaths': {
-      '& g.Succeeded': {
+      '& g.link': {
         fill: theme.palette.status.completed.text,
         stroke: theme.palette.status.completed.text,
-      },
-      '& g.Running': {
-        fill: theme.palette.status.running.text,
-        stroke: theme.palette.status.running.text,
-      },
-      '& g.Pending': {
-        fill: theme.palette.status.pending.text,
-        stroke: theme.palette.status.pending.text,
-      },
-      '& g.Failed': {
-        fill: theme.palette.status.failed.text,
-        stroke: theme.palette.status.failed.text,
       },
     },
   },

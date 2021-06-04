@@ -4,7 +4,7 @@ import {
   Typography,
   useTheme,
 } from '@material-ui/core';
-import { KuberaCard, RadioButton, Search } from 'kubera-ui';
+import { LitmusCard, RadioButton, Search } from 'litmus-ui';
 import localforage from 'localforage';
 import React, { useEffect, useState } from 'react';
 import data from '../../../components/PredifinedWorkflows/data';
@@ -32,6 +32,7 @@ const ChoosePreDefinedExperiments = () => {
       id: event.target.value,
     };
     localforage.setItem('selectedScheduleOption', selection);
+    localforage.setItem('hasSetWorkflowData', false);
   };
 
   const filteredPreDefinedWorkflows = data.filter(
@@ -42,10 +43,15 @@ const ChoosePreDefinedExperiments = () => {
     }
   );
 
+  // Selects Option A -> Sub Experiment Options which was already selected by the user
   useEffect(() => {
     localforage
       .getItem('selectedScheduleOption')
-      .then((value) => setSelected((value as ChooseWorkflowRadio).id));
+      .then((value) =>
+        value !== null
+          ? setSelected((value as ChooseWorkflowRadio).id)
+          : setSelected('')
+      );
   }, []);
 
   return (
@@ -66,11 +72,16 @@ const ChoosePreDefinedExperiments = () => {
 
         {/* List of Pre-defined workflows */}
         <div className={classes.predefinedWorkflowDiv}>
-          <RadioGroup value={selected} onChange={handleChange}>
+          <RadioGroup
+            value={selected}
+            data-cy="PredefinedWorkflowsRadioGroup"
+            onChange={handleChange}
+          >
             {filteredPreDefinedWorkflows.map((workflowData) => (
-              <KuberaCard
+              <LitmusCard
                 width="100%"
                 height="5rem"
+                key={workflowData.workflowID}
                 borderColor={palette.border.main}
                 className={classes.predefinedWorkflowCard}
               >
@@ -94,7 +105,7 @@ const ChoosePreDefinedExperiments = () => {
                     </div>
                   </div>
                 </RadioButton>
-              </KuberaCard>
+              </LitmusCard>
             ))}
           </RadioGroup>
         </div>
@@ -104,4 +115,5 @@ const ChoosePreDefinedExperiments = () => {
     </AccordionDetails>
   );
 };
+
 export default ChoosePreDefinedExperiments;

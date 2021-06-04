@@ -255,7 +255,7 @@ const InputField: React.FC<InputFieldProps> = ({
               disableUnderline: true,
               endAdornment: (
                 <InputAdornment position="end">
-                  <img src="./icons/closeFilled.svg" alt="Error" />
+                  <img src="/icons/closeFilled.svg" alt="Error" />
                 </InputAdornment>
               ),
             } as Partial<OutlinedInputProps>
@@ -320,7 +320,7 @@ const InputField: React.FC<InputFieldProps> = ({
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <img src="./icons/closeFilled.svg" alt="Error" />
+                  <img src="/icons/closeFilled.svg" alt="Error" />
                 </InputAdornment>
               ),
             } as Partial<OutlinedInputProps>

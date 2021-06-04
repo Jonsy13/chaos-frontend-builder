@@ -4,7 +4,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: '95%',
     fontSize: '1.125rem',
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
     margin: theme.spacing(2, 0),
   },
 
@@ -31,8 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 
   linkBox: {
-    backgroundColor: theme.palette.cards.background,
-    border: `1px solid ${theme.palette.cards.background} `,
+    border: `1px solid ${theme.palette.border.main} `,
     padding: theme.spacing(3.75),
     borderRadius: theme.spacing(1),
     display: 'flex',
@@ -50,12 +49,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   yamlLink: {
     width: '90%',
     whiteSpace: 'pre-wrap',
-    paddingTop: theme.spacing(1.25),
+    paddingTop: theme.spacing(1),
     fontSize: '0.9375rem',
   },
 
   done: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
     paddingRight: theme.spacing(0.625),
   },
 

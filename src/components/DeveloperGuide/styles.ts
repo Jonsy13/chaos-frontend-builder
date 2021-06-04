@@ -3,9 +3,9 @@ import { makeStyles, Theme } from '@material-ui/core';
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: '100%',
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.disabledBackground,
     borderRadius: '0.1875rem',
-    borderLeft: `6px solid ${theme.palette.secondary.dark} `,
+    borderLeft: `6px solid ${theme.palette.primary.main} `,
     marginBottom: theme.spacing(2.25),
   },
   rootContainer: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontWeight: 'bold',
     fontSize: '1.25rem',
     width: '40.625rem',
-    color: theme.palette.text.secondary,
+    color: theme.palette.common.black,
   },
   textDesc: {
     fontSize: '1rem',
@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     color: theme.palette.common.black,
   },
   guideLink: {
-    color: theme.palette.primary.main,
+    color: theme.palette.common.black,
     paddingLeft: theme.spacing(1.5),
     paddingTop: theme.spacing(-1.25),
   },

@@ -1,9 +1,9 @@
 import { Typography } from '@material-ui/core';
 import React from 'react';
 import BackButton from '../../components/Button/BackButton';
-import Scaffold from '../../containers/layouts/Scaffold';
 import DashboardList from '../../components/PreconfiguredDashboards/data';
-import DashboardCards from '../../views/AnalyticsDashboard/KubernetesDashboards/Cards/dashBoardCards';
+import Scaffold from '../../containers/layouts/Scaffold';
+import DashboardCards from '../../views/Analytics/ApplicationDashboards/Cards/dashBoardCards';
 import useStyles from './styles';
 
 const DashboardSelectPage: React.FC = () => {
@@ -13,7 +13,7 @@ const DashboardSelectPage: React.FC = () => {
     <Scaffold>
       <div className={classes.root}>
         <div className={classes.button}>
-          <BackButton isDisabled={false} />
+          <BackButton />
         </div>
         <Typography className={classes.heading}>
           <strong>Select a dashboard</strong>

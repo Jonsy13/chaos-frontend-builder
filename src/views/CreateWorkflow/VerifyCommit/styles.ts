@@ -1,159 +1,199 @@
 import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    borderColor: theme.palette.text.disabled,
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: '0.1875rem',
-    height: '100%',
-    width: '80%',
-    margin: '0 auto',
-    flexDirection: 'column',
-    padding: theme.spacing(3.75, 6, 3.75, 3.75),
-  },
   horizontalLine: {
     background: theme.palette.border.main,
   },
+  root: {
+    background: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    padding: theme.spacing(0, 2),
+    margin: '0 auto',
+    width: '98%',
+    height: '100%',
+    flexDirection: 'column',
+    [theme.breakpoints.up('lg')]: {
+      width: '99%',
+    },
+  },
+
+  // Inner Container
+  innerContainer: {
+    margin: theme.spacing(4, 'auto'),
+    width: '95%', // Inner width of the container
+  },
+
   suHeader: {
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-even',
+    justifyContent: 'space-between',
   },
   headerText: {
-    marginTop: theme.spacing(2.75),
-    fontSize: '1.5625rem',
+    fontWeight: 700,
+    fontSize: '1.2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1.4rem',
+    },
   },
   description: {
     marginTop: theme.spacing(3.25),
     marginBottom: theme.spacing(7.5),
-    fontSize: '1.0625rem',
-  },
-  suBody: {
-    width: '65%',
+    fontSize: '1rem',
   },
   bfinIcon: {
     width: '7rem',
     height: '6.31rem',
-    marginTop: theme.spacing(5),
-    marginLeft: theme.spacing(12),
   },
-  outerSum: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(3),
+  summaryWrapper: {
+    padding: theme.spacing(2, 0),
+  },
+  itemWrapper: {
     display: 'flex',
-    flexDirection: 'column',
+    justifyContent: 'space-between',
+    margin: theme.spacing(2, 0),
   },
-  summaryDiv: {
+  verticalAlign: {
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    fontSize: '1rem',
+  },
+  left: {
+    width: '20%',
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    color: theme.palette.highlight,
+    fontSize: '1rem',
+  },
+  leftFlex: {
     display: 'flex',
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'flex-start',
-    alignItems: 'baseline',
-    marginTop: theme.spacing(3),
-  },
-  innerSumDiv: {
     width: '20%',
     verticalAlign: 'middle',
-    display: 'table-cell',
-    alignContent: 'center',
-    height: '100%',
+    color: theme.palette.highlight,
+    fontSize: '1rem',
+  },
+  right: {
+    width: '75%',
+    display: 'flex',
+  },
+  rightColumn: {
+    width: '75%',
+  },
+  spaceBetween: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   sumText: {
     width: '100%',
-    marginTop: theme.spacing(4.5),
-    marginBottom: theme.spacing(3),
-    fontSize: '1.5rem',
+    margin: theme.spacing(2, 0),
+    fontWeight: 700,
+    fontSize: '1.2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1.4rem',
+    },
   },
-  col1: {
-    fontSize: '1rem',
-    color: theme.palette.highlight,
-    paddingTop: theme.spacing(0.5),
-    verticalAlign: 'middle',
+  subject: {
     alignContent: 'center',
-  },
-  schedule: {
+    color: theme.palette.highlight,
     fontSize: '1rem',
-    paddingLeft: theme.spacing(2),
-    paddingTop: theme.spacing(0.75),
+    paddingTop: theme.spacing(1.25),
+    verticalAlign: 'middle',
   },
-  col2: {
-    width: '75%',
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(5),
+  subjectDesc: {
+    fontSize: '0.75rem',
   },
-  schCol2: {
-    marginLeft: theme.spacing(5),
-    display: 'flex',
-    flexDirection: 'row',
+  info: {
+    margin: theme.spacing(0.5, 1),
   },
-  clusterName: {
-    fontSize: '1rem',
-    marginLeft: theme.spacing(7),
-    paddingTop: theme.spacing(0.5),
+  editIcon: {
+    cursor: 'pointer',
+    color: theme.palette.text.hint,
   },
-  editButton1: {
-    marginLeft: theme.spacing(1),
-  },
-  editbtn: {
-    color: theme.palette.text.secondary,
-  },
-  link: {
-    fontSize: '0.875rem',
-    color: theme.palette.secondary.dark,
-  },
-  adjWeights: {
-    width: '80%',
-    marginLeft: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  config: {
-    height: '3rem',
-    fontSize: '0.9375rem',
-    color: theme.palette.text.disabled,
-    width: '30rem',
-    marginTop: theme.spacing(3.75),
-    marginLeft: theme.spacing(30),
-  },
-  typoCol2: {
-    fontSize: '1rem',
-  },
-  textEdit: {
-    marginTop: theme.spacing(7.5),
-  },
-  buttonOutlineText: {
-    padding: theme.spacing(1.5),
+  spacingHorizontal: {
+    margin: theme.spacing(0, 1),
   },
   errorText: {
-    fontSize: '1rem',
     color: theme.palette.error.main,
-    marginLeft: theme.spacing(5),
-  },
-  yamlFlex: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginLeft: theme.spacing(7),
-  },
-  yamlButton: {
-    width: theme.spacing(1.5),
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(1),
+    fontWeight: 700,
+    fontSize: '1rem',
   },
   progress: {
     display: 'flex',
-    flexGrow: 1,
     flexDirection: 'row',
-    marginLeft: theme.spacing(5),
+    flexWrap: 'wrap',
+    flexGrow: 1,
   },
-  buttomPad: {
-    paddingBottom: theme.spacing(3.75),
+  closeBtn: {
+    color: theme.palette.secondary.contrastText,
+    marginTop: theme.spacing(-6),
+    marginRight: theme.spacing(-2.5),
   },
+  verifyYAMLButton: {
+    width: '10rem',
+  },
+
+  // Modal
   modal: {
-    textAlign: 'left',
+    [theme.breakpoints.up('lg')]: {
+      padding: theme.spacing(10),
+    },
+    padding: theme.spacing(3),
+  },
+  heading: {
+    fontSize: '2rem',
+    textalign: 'center',
+    marginTop: theme.spacing(3),
+    color: theme.palette.text.primary,
+  },
+  headWorkflow: {
+    fontsize: '2rem',
+    textalign: 'center',
+    color: theme.palette.text.primary,
+    marginTop: theme.spacing(3),
+  },
+  button: {
+    color: theme.palette.text.primary,
+    textAlign: 'center',
+    marginTop: theme.spacing(5),
   },
   closeButton: {
     borderColor: theme.palette.border.main,
+  },
+  successful: {
+    fontSize: '2.2rem',
+    fontWeight: 'bold',
+    margin: theme.spacing(2, 0),
+  },
+  bold: {
+    fontWeight: 700,
+  },
+
+  // Editor
+  editorWrapper: {
+    marginBottom: theme.spacing(-4),
+  },
+  flex: {
+    display: 'flex',
+  },
+  additional: {
+    width: '95%',
+    margin: '0rem auto',
+    justifyContent: 'space-between',
+  },
+  name: {
+    margin: theme.spacing(1, 0, 2, 2),
+    fontWeight: 'bold',
+  },
+  editorTopBtn: {
+    padding: '0.4rem',
+    fontSize: '0.8rem',
+  },
+  editorCloseBtn: {
+    width: '0.5rem',
+    borderColor: theme.palette.disabledBackground,
+    color: theme.palette.text.disabled,
+    minWidth: '2rem',
+    padding: '0.2rem',
+    fontSize: '1rem',
   },
 }));
 export default useStyles;

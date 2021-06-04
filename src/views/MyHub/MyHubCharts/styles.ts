@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(4.5, 1.5, 2.5, 1.5),
   },
   backdrop: {
-    background: theme.palette.modal.backdrop,
+    background: theme.palette.disabledBackground,
     display: 'flex',
     flexDirection: 'column',
   },
@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     border: '0.0625rem solid',
     borderColor: theme.palette.border.main,
-    backgroundColor: theme.palette.sidebarMenu,
+    backgroundColor: theme.palette.common.white,
   },
   search: {
     fontSize: '1rem',
@@ -64,14 +64,14 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: theme.palette.border.main,
-    backgroundColor: theme.palette.sidebarMenu,
+    backgroundColor: theme.palette.common.white,
   },
   cardDiv: {
     width: '12.5rem',
     height: '12.5rem',
-    border: `1px solid ${theme.palette.border.main}`,
+    border: '1px solid rgba(0, 0, 0, 0.2)',
     '&:hover': {
-      border: `1.8px solid ${theme.palette.secondary.dark}`,
+      border: `1.8px solid ${theme.palette.primary.light}`,
       cursor: 'pointer',
     },
     borderRadius: theme.spacing(0.5),
@@ -82,11 +82,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
-    '&:hover': {
-      backgroundColor: '#173433',
-    },
-    height: '100%',
-    backgroundColor: theme.palette.cards.background,
+    backgroundColor: theme.palette.common.white,
   },
   cardImage: {
     marginTop: theme.spacing(1.5),
@@ -96,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
   categoryName: {
     marginTop: theme.spacing(2),
     fontSize: '1rem',
-    color: theme.palette.secondary.dark,
+    color: theme.palette.primary.dark,
   },
   expName: {
     fontSize: '0.875rem',
@@ -104,6 +100,17 @@ const useStyles = makeStyles((theme) => ({
   lastSyncText: {
     marginTop: theme.spacing(1.875),
     fontSize: '0.875rem',
+  },
+  MuiAccordionroot: {
+    '&.MuiAccordion-root:before': {
+      backgroundColor: theme.palette.common.white,
+    },
+  },
+  noExp: {
+    margin: theme.spacing(6),
+  },
+  chartAccordion: {
+    marginTop: theme.spacing(2.5),
   },
 }));
 

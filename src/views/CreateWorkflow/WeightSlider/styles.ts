@@ -10,13 +10,9 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: theme.spacing(1.25),
   },
   testResult: {
-    color: theme.palette.warning.main,
+    color: theme.palette.primary.dark,
     fontSize: '1.0625rem',
     paddingLeft: theme.spacing(1.25),
-  },
-  dash: {
-    marginTop: theme.spacing(0.5),
-    color: theme.palette.border.main,
   },
   mainDiv: {
     display: 'flex',

@@ -246,7 +246,7 @@ const InputFieldOutline: React.FC<InputFieldOutlineProps> = ({
               disableUnderline: true,
               endAdornment: (
                 <InputAdornment position="end">
-                  <img src="./icons/closeFilled.svg" alt="Error" />
+                  <img src="/icons/closeFilled.svg" alt="Error" />
                 </InputAdornment>
               ),
             } as Partial<OutlinedInputProps>
@@ -309,7 +309,7 @@ const InputFieldOutline: React.FC<InputFieldOutlineProps> = ({
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <img src="./icons/closeFilled.svg" alt="Error" />
+                  <img src="/icons/closeFilled.svg" alt="Error" />
                 </InputAdornment>
               ),
             } as Partial<OutlinedInputProps>

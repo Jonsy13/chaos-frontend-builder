@@ -29,7 +29,7 @@ const CustomTime: React.FC<CustomTimeProps> = ({
         inputProps={{
           style: {
             fontSize: '0.75rem',
-            color: '#FFFFFF',
+            color: '#000000',
             paddingLeft: '1.8125rem',
             height: '0.425rem',
           },

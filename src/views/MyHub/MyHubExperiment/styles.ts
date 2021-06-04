@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
     fontSize: '1rem',
     marginBottom: theme.spacing(2),
-    color: theme.palette.text.secondary,
+    color: theme.palette.common.black,
   },
   installLinks: {
     marginTop: theme.spacing(2),
@@ -41,19 +41,17 @@ const useStyles = makeStyles((theme) => ({
   },
   expMain: {
     marginLeft: theme.spacing(1.25),
+    marginBottom: theme.spacing(2),
   },
   linkText: {
     fontSize: '1rem',
   },
-  link: {
-    color: theme.palette.primary.main,
-  },
   developerDiv: {
     marginLeft: theme.spacing(2.5),
-    marginTop: theme.spacing(6.25),
+    marginTop: theme.spacing(4.25),
   },
   detailDiv: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.common.white,
     border: `1px solid ${theme.palette.border.main}`,
     borderRadius: '0.1875rem',
     padding: theme.spacing(3.75),

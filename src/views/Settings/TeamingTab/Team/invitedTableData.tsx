@@ -1,4 +1,4 @@
-import { useMutation } from '@apollo/client/react/hooks';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   Avatar,
   IconButton,
@@ -7,88 +7,79 @@ import {
   TableCell,
   Typography,
 } from '@material-ui/core';
-import { ButtonFilled, ButtonOutlined, LightPills, Modal } from 'kubera-ui';
-import React, { useEffect, useState } from 'react';
+import { ButtonFilled, LightPills } from 'litmus-ui';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import Loader from '../../../../components/Loader';
-import config from '../../../../config';
-import { REMOVE_INVITATION, SEND_INVITE } from '../../../../graphql/mutations';
-import { GET_PROJECT } from '../../../../graphql/queries';
 import {
-  MemberInvitation,
+  ALL_USERS,
+  GET_PROJECT,
+  GET_USER,
+  SEND_INVITE,
+} from '../../../../graphql';
+import {
+  InvitationStatus,
   MemberInviteNew,
 } from '../../../../models/graphql/invite';
-import { Member } from '../../../../models/graphql/user';
+import {
+  CurrentUserDedtailsVars,
+  CurrentUserDetails,
+  Member,
+  Role,
+} from '../../../../models/graphql/user';
 import { CurrentUserData } from '../../../../models/userData';
-import { RootState } from '../../../../redux/reducers';
-import userAvatar, { getCoreToken } from '../../../../utils/user';
+import { getProjectID } from '../../../../utils/getSearchParams';
+import { userInitials } from '../../../../utils/userInitials';
+import RemoveMemberModal from './removeMemberModal';
 import useStyles from './styles';
 
 interface TableDataProps {
   row: Member;
   index: number;
+  showModal: () => void;
 }
-const InvitedTableData: React.FC<TableDataProps> = ({ row }) => {
+const InvitedTableData: React.FC<TableDataProps> = ({ row, showModal }) => {
   const classes = useStyles();
-  const userData = useSelector((state: RootState) => state.userData);
-  const { t } = useTranslation();
+  const projectID = getProjectID();
 
-  const [open, setOpen] = React.useState(false);
+  const { t } = useTranslation();
+  const [open, setOpen] = useState<boolean>(false);
   const [role, setRole] = useState<string>(row.role);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
 
   const [SendInvite] = useMutation<MemberInviteNew>(SEND_INVITE, {
+    onCompleted: () => {
+      window.location.reload();
+    },
     refetchQueries: [
       {
         query: GET_PROJECT,
-        variables: { projectID: userData.selectedProjectID },
+        variables: { projectID },
+      },
+      {
+        query: ALL_USERS,
       },
     ],
   });
 
-  // mutation to remove member
-  const [removeMember, { loading }] = useMutation<MemberInvitation>(
-    REMOVE_INVITATION,
-    {
-      onCompleted: () => {
-        setOpen(false);
-      },
-      onError: () => {},
-      refetchQueries: [
-        {
-          query: GET_PROJECT,
-          variables: { projectID: userData.selectedProjectID },
-        },
-      ],
-    }
-  );
-
   const [memberDetails, setMemberDetails] = useState<CurrentUserData>();
 
-  useEffect(() => {
-    fetch(`${config.auth.url}/v1/user/uid/${row.user_uid}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getCoreToken()}`,
-      },
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((res) => {
-        setMemberDetails(res);
-        // setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
+  // Query to get user details
+  useQuery<CurrentUserDetails, CurrentUserDedtailsVars>(GET_USER, {
+    variables: { username: row.user_name },
+    onCompleted: (data) => {
+      setMemberDetails({
+        // TODO: Check if all are being used
+        name: data.getUser.name,
+        uid: data.getUser.id,
+        username: data.getUser.username,
+        role: data.getUser.role,
+        email: data.getUser.email,
       });
-  }, []);
-
+    },
+  });
   return (
     <>
       <TableCell className={classes.firstTC} component="th" scope="row">
@@ -98,9 +89,9 @@ const InvitedTableData: React.FC<TableDataProps> = ({ row }) => {
             alt="User"
             className={classes.avatarBackground}
           >
-            {userAvatar(memberDetails ? memberDetails.name : '')}
+            {userInitials(memberDetails ? memberDetails.username : '')}
           </Avatar>
-          {memberDetails ? memberDetails.name : ''}
+          {memberDetails ? memberDetails.username : ''}
         </div>
       </TableCell>
       <TableCell className={classes.otherTC}>
@@ -126,7 +117,7 @@ const InvitedTableData: React.FC<TableDataProps> = ({ row }) => {
           >
             <MenuItem
               onClick={() => {
-                setRole('Editor');
+                setRole(Role.editor);
                 setAnchorEl(null);
               }}
               className={classes.menuOpt}
@@ -152,7 +143,7 @@ const InvitedTableData: React.FC<TableDataProps> = ({ row }) => {
             </MenuItem>
             <MenuItem
               onClick={() => {
-                setRole('Viewer');
+                setRole(Role.viewer);
                 setAnchorEl(null);
               }}
               className={classes.menuOpt}
@@ -184,115 +175,50 @@ const InvitedTableData: React.FC<TableDataProps> = ({ row }) => {
       </TableCell>
       <TableCell className={classes.otherTC}>
         <LightPills
-          variant={row.invitation === 'Pending' ? 'warning' : 'danger'}
+          variant={
+            row.invitation === InvitationStatus.pending ? 'warning' : 'danger'
+          }
           label={row.invitation}
         />
       </TableCell>
 
-      <TableCell className={classes.buttonTC} key={row.user_uid}>
+      <TableCell className={classes.buttonTC} key={row.user_id}>
         <div className={classes.lastCell}>
-          <IconButton
-            onClick={() => {
-              setOpen(true);
-            }}
-          >
-            <img alt="delete" src="./icons/deleteBox.svg" height="45" />
-          </IconButton>
+          {row.invitation !== InvitationStatus.exited &&
+            row.invitation !== InvitationStatus.declined && (
+              <IconButton onClick={() => setOpen(true)}>
+                <img alt="delete" src="./icons/deleteBox.svg" height="45" />
+              </IconButton>
+            )}
           <ButtonFilled
             disabled={false}
-            onClick={() =>
+            onClick={() => {
               SendInvite({
                 variables: {
                   member: {
-                    project_id: userData.selectedProjectID,
-                    user_uid: row.user_uid,
+                    project_id: projectID,
+                    user_id: row.user_id,
                     role,
                   },
                 },
-              })
-            }
+              });
+            }}
           >
             {t('settings.teamingTab.invitation.sentInvitation.resend')}
           </ButtonFilled>
         </div>
       </TableCell>
-      <Modal
-        data-cy="modal"
-        open={open}
-        width="43.75rem"
-        disableBackdropClick
-        disableEscapeKeyDown
-        onClose={() => {
-          setOpen(false);
-        }}
-        modalActions={
-          <div className={classes.closeModal}>
-            <IconButton
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              <img src="./icons/closeBtn.svg" alt="close" />
-            </IconButton>
-          </div>
-        }
-      >
-        <div className={classes.body}>
-          <img src="./icons/userDel.svg" alt="lock" />
-          <div className={classes.text}>
-            <Typography className={classes.typo} align="center">
-              {t('settings.teamingTab.deleteModal.header')}
-              <strong>
-                {' '}
-                <span className={classes.userName}>
-                  {memberDetails
-                    ? memberDetails.name
-                    : t('settings.teamingTab.deleteModal.text')}
-                </span>
-              </strong>
-            </Typography>
-          </div>
-          <div className={classes.textSecond}>
-            <Typography className={classes.typoSub} align="center">
-              <>{t('settings.teamingTab.deleteModal.body')}</>
-            </Typography>
-          </div>
-          <div className={classes.buttonGroup}>
-            <ButtonOutlined
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              <>{t('settings.teamingTab.deleteModal.noButton')}</>
-            </ButtonOutlined>
-            <div className={classes.yesButton}>
-              <ButtonFilled
-                disabled={loading}
-                onClick={() => {
-                  removeMember({
-                    variables: {
-                      data: {
-                        project_id: userData.selectedProjectID,
-                        user_uid: row.user_uid,
-                      },
-                    },
-                  });
-                }}
-              >
-                <>
-                  {loading ? (
-                    <div>
-                      <Loader size={20} />
-                    </div>
-                  ) : (
-                    <>{t('settings.teamingTab.deleteModal.yesButton')}</>
-                  )}
-                </>
-              </ButtonFilled>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      {open && (
+        <RemoveMemberModal
+          open={open}
+          handleClose={() => {
+            setOpen(false);
+          }}
+          row={row}
+          showModal={showModal}
+          isRemove={false}
+        />
+      )}
     </>
   );
 };

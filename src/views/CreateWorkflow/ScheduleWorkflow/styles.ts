@@ -2,35 +2,44 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    paddingBottom: theme.spacing(4),
-  },
-
-  horizontalLine: {
-    background: theme.palette.border.main,
-  },
-
-  scHeader: {
-    borderColor: theme.palette.text.disabled,
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: '0.1875rem',
-    height: '100%',
-    width: '80%',
-    margin: '0 auto',
+    background: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    padding: theme.spacing(0, 2),
+    margin: '1rem auto',
+    width: '98%',
     flexDirection: 'column',
-    padding: theme.spacing(6, 3.75, 4, 3.75),
+    [theme.breakpoints.up('lg')]: {
+      width: '99%',
+    },
+  },
+
+  title: {
+    padding: theme.spacing(0, 2),
+    fontWeight: 700,
+    fontSize: '2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '2.3rem',
+    },
+  },
+
+  // Inner Container
+  innerContainer: {
+    margin: theme.spacing(4, 'auto'),
+    width: '95%', // Inner width of the container
   },
 
   /* styles for upper and lower segment */
   scSegments: {
-    position: 'relative',
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-even',
+    justifyContent: 'space-between',
   },
 
   headerText: {
     marginTop: theme.spacing(1.25),
-    fontSize: '1.5625rem',
+    fontSize: '1.2rem',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '1.4rem',
+    },
   },
   schBody: {
     width: '32.18rem',
@@ -45,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
   radioText: {
     fontSize: '0.875rem',
+    color: theme.palette.text.primary,
   },
   description: {
     width: '32.18rem',
@@ -54,14 +64,25 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 
   calIcon: {
-    posiion: 'relative',
     width: '7rem',
     height: '6.31rem',
-    marginTop: theme.spacing(2),
   },
 
   scFormControl: {
     marginTop: theme.spacing(5),
+  },
+
+  radio: {
+    color: theme.palette.primary.dark,
+    '&$checked': {
+      color: theme.palette.primary.dark,
+    },
+  },
+  checked: {},
+  buttonDiv: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 
   /* For recurring schedule options */

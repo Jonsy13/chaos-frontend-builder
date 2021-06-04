@@ -1,7 +1,7 @@
 const loc = window.location;
-let apiURL;
-let authURL;
 let sockURL;
+let authURL;
+let apiURL;
 if (loc.protocol === 'https:') {
   sockURL = 'wss:';
 } else {
@@ -11,13 +11,13 @@ if (
   process.env.NODE_ENV.trim() === 'development' ||
   process.env.NODE_ENV.trim() === 'test'
 ) {
-  apiURL = `${window.location.protocol}//${window.location.hostname}:8080`;
   authURL = `${window.location.protocol}//${window.location.hostname}:3000`;
+  apiURL = `${window.location.protocol}//${window.location.hostname}:8080`;
   sockURL += `//${window.location.hostname}:8080`;
 } else {
-  authURL = '/api/auth';
-  apiURL = '/chaos/api/graphql';
-  sockURL += `//${loc.host}/chaos/api/graphql`;
+  authURL = '/auth';
+  apiURL = '/api';
+  sockURL += `//${loc.host}/ws`;
 }
 export default {
   environment: process.env.NODE_ENV,

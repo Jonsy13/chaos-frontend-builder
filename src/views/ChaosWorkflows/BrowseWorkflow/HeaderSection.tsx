@@ -6,7 +6,6 @@ import {
   InputBase,
   InputLabel,
   MenuItem,
-  OutlinedInput,
   Popover,
   Select,
   Typography,
@@ -19,16 +18,16 @@ import React, { useState } from 'react';
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main css file
 import 'react-date-range/dist/theme/default.css'; // theme css file
-import { Workflow, WorkflowRun } from '../../../models/graphql/workflowData';
-import useStyles, { useOutlinedInputStyles } from './styles';
+import { Clusters } from '../../../models/graphql/clusterData';
+import { WorkflowStatus } from '../../../models/graphql/workflowData';
+import useStyles from './styles';
 
 interface HeaderSectionProps {
-  searchValue: string;
-  statusValue: string;
-  clusterValue: string;
+  searchValue?: string;
+  statusValue?: WorkflowStatus;
+  clusterValue?: string;
   isOpen: boolean;
-  data: Workflow | undefined;
-  getClusters: (wfdata: WorkflowRun[]) => string[];
+  clusterList?: Partial<Clusters>;
   isDateOpen: boolean;
   popAnchorEl: HTMLElement | null;
   displayDate: string;
@@ -63,10 +62,9 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
   statusValue,
   clusterValue,
   isOpen,
-  data,
   popAnchorEl,
   displayDate,
-  getClusters,
+  clusterList,
   changeSearch,
   changeStatus,
   changeCluster,
@@ -83,7 +81,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
       key: 'selection',
     },
   ]);
-  const outlinedInputClasses = useOutlinedInputStyles();
+
   return (
     <div>
       <div className={classes.headerSection}>
@@ -94,9 +92,6 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           className={classes.search}
           value={searchValue}
           onChange={changeSearch}
-          classes={{
-            input: classes.input,
-          }}
           startAdornment={
             <InputAdornment position="start">
               <SearchIcon />
@@ -105,7 +100,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
         />
 
         {/* Select Workflow */}
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={classes.formControl} focused>
           <InputLabel className={classes.selectText}>
             Workflow Status
           </InputLabel>
@@ -114,33 +109,29 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             onChange={changeStatus}
             label="Workflow Status"
             className={classes.selectText}
-            input={<OutlinedInput classes={outlinedInputClasses} />}
           >
             <MenuItem value="All">All</MenuItem>
             <MenuItem value="Failed">Failed</MenuItem>
             <MenuItem value="Running">Running</MenuItem>
-            <MenuItem value="Succeeded">Succeeded</MenuItem>
+            <MenuItem value="Succeeded">Completed</MenuItem>
           </Select>
         </FormControl>
 
         {/* Select Cluster */}
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={classes.formControl} focused>
           <InputLabel className={classes.selectText}>Target Cluster</InputLabel>
           <Select
             value={clusterValue}
             onChange={changeCluster}
             label="Target Cluster"
             className={classes.selectText}
-            input={<OutlinedInput classes={outlinedInputClasses} />}
           >
             <MenuItem value="All">All</MenuItem>
-            {(data ? getClusters(data.getWorkFlowRuns) : []).map(
-              (cluster: string) => (
-                <MenuItem key={cluster} value={cluster}>
-                  {cluster}
-                </MenuItem>
-              )
-            )}
+            {clusterList?.getCluster?.map((cluster) => (
+              <MenuItem key={cluster.cluster_name} value={cluster.cluster_name}>
+                {cluster.cluster_name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
@@ -182,7 +173,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             ranges={state}
             direction="vertical"
             editableDateInputs
-            rangeColors={[palette.secondary.dark]}
+            rangeColors={[palette.primary.dark]}
             showMonthAndYearPickers
           />
         </Popover>

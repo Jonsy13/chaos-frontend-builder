@@ -1,12 +1,10 @@
-import {
-  createStyles,
-  makeStyles,
-  TableCell,
-  Theme,
-  withStyles,
-} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.background.paper,
+  },
+
   // Header Section Properties
   headerSection: {
     width: '100%',
@@ -16,8 +14,8 @@ const useStyles = makeStyles((theme) => ({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    borderColor: theme.palette.cards.background,
-    backgroundColor: theme.palette.background.paper,
+    border: '1px solid rgba(0, 0, 0, 0.05)',
+    backgroundColor: theme.palette.cards.background,
   },
 
   search: {
@@ -27,23 +25,17 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(6.25),
   },
 
-  input: {
-    '&:-webkit-autofill': {
-      WebkitTextFillColor: theme.palette.text.secondary,
-      WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
-    },
-  },
   // Form Select Properties
   formControl: {
     margin: theme.spacing(0.5),
     marginRight: theme.spacing(2.5),
+    height: '2.5rem',
     minWidth: '9rem',
   },
 
   selectText: {
-    color: theme.palette.border.main,
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(0.4),
+    height: '2.5rem',
+    padding: theme.spacing(0.5),
   },
 
   selectDate: {
@@ -51,26 +43,22 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'row',
     height: '2.5rem',
     minWidth: '9rem',
-    border: '0.1px solid',
+    border: '0.125rem solid',
     borderRadius: 4,
-    borderColor: theme.palette.border.main,
+    borderColor: theme.palette.primary.main,
     marginRight: theme.spacing(3.75),
     textTransform: 'none',
   },
   displayDate: {
     marginLeft: theme.spacing(1),
     width: '100%',
-    color: theme.palette.text.primary,
   },
 
   // Table and Table Data Properties
-  root: {
-    backgroundColor: theme.palette.background.paper,
-  },
   tableMain: {
     marginTop: theme.spacing(4.25),
-    border: `1px solid ${theme.palette.background.paper}`,
-    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.disabledBackground}`,
+    backgroundColor: theme.palette.cards.background,
     height: '29.219rem',
     '&::-webkit-scrollbar': {
       width: '0.2em',
@@ -79,10 +67,7 @@ const useStyles = makeStyles((theme) => ({
       webkitBoxShadow: `inset 0 0 6px ${theme.palette.common.black}`,
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: theme.palette.secondary.dark,
-    },
-    '&:not(:last-child)': {
-      borderBottom: 0,
+      backgroundColor: theme.palette.primary.main,
     },
   },
   tableHead: {
@@ -93,54 +78,41 @@ const useStyles = makeStyles((theme) => ({
     '& th': {
       fontWeight: 'bold',
       fontSize: '0.8125rem',
-      color: theme.palette.text.secondary,
-      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.disabled,
+      backgroundColor: theme.palette.cards.background,
     },
   },
   headerStatus: {
-    paddingLeft: theme.spacing(8),
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+    paddingLeft: theme.spacing(10),
   },
+
   workflowName: {
     borderRight: `1px solid ${theme.palette.border.main}`,
-    color: theme.palette.text.hint,
+  },
+
+  targetCluster: {
+    paddingLeft: theme.spacing(5),
+  },
+
+  tableDataStatus: {
+    paddingLeft: theme.spacing(8.5),
   },
   sortDiv: {
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: theme.spacing(1.25),
   },
-  headData: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
-  },
-  tableDataStatus: {
-    paddingLeft: theme.spacing(8.5),
-  },
-  progressBar: {
-    width: '6.5rem',
-  },
-  steps: {
-    marginLeft: theme.spacing(5.625),
-  },
+
   workflowNameData: {
     maxWidth: '15.625rem',
     borderRight: `1px solid ${theme.palette.border.main}`,
   },
-  targetCluster: {
-    paddingLeft: theme.spacing(3.75),
-    color: theme.palette.text.primary,
-    opacity: 0.6,
-  },
+
   clusterName: {
-    marginLeft: theme.spacing(4),
+    marginLeft: theme.spacing(5),
   },
   reliabiltyData: {
-    width: '8.125rem',
-  },
-  stepsData: {
-    paddingLeft: theme.spacing(3.75),
+    width: '12rem',
   },
   optionBtn: {
     marginLeft: 'auto',
@@ -149,16 +121,18 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
   },
-  failed: {
-    color: theme.palette.error.main,
+
+  // Colors for Resilency score and Experiments passed
+  less: {
+    color: theme.palette.status.failed.text,
   },
-  success: {
-    color: theme.palette.primary.dark,
+  medium: {
+    color: theme.palette.status.pending.text,
   },
-  headerIcon: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+  high: {
+    color: theme.palette.status.completed.text,
   },
+
   // Menu option with icon
   expDiv: {
     display: 'flex',
@@ -174,40 +148,39 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(1.625),
   },
   paddedTypography: {
-    paddingTop: theme.spacing(1.5),
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+    display: 'flex',
+    flexDirection: 'row',
+    margin: theme.spacing('auto', 0),
   },
-  pagination: {
-    marginTop: theme.spacing(-0.25),
-    borderTop: `1px solid ${theme.palette.border.main}`,
+  experimentDetails: {
+    display: 'flex',
+  },
+  arrowMargin: {
+    marginLeft: theme.spacing(0.5),
+  },
+  popover: {
+    padding: theme.spacing(3.125, 2.6),
+    width: '15.1875rem',
+  },
+
+  boldText: {
+    fontWeight: 'bold',
+  },
+
+  buttonTransform: {
+    textTransform: 'none',
+  },
+  paper: {
+    padding: theme.spacing(1),
+  },
+  LastUpdatedPopover: {
+    pointerEvents: 'none',
+  },
+  lastUpdatedText: {
+    '&:hover': {
+      pointer: 'cursor',
+    },
   },
 }));
 
 export default useStyles;
-
-export const useOutlinedInputStyles = makeStyles((theme: Theme) => ({
-  root: {
-    '& $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    '&:hover $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    '&$focused $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    height: '2.5rem',
-    color: theme.palette.text.primary,
-  },
-  focused: {},
-  notchedOutline: {},
-}));
-
-export const StyledTableCell = withStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      borderBottom: `1px solid ${theme.palette.border.main}`,
-    },
-  })
-)(TableCell);

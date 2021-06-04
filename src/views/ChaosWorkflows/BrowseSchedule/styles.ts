@@ -1,10 +1,4 @@
-import {
-  createStyles,
-  makeStyles,
-  TableCell,
-  Theme,
-  withStyles,
-} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   // Header Section Properties
@@ -16,19 +10,14 @@ const useStyles = makeStyles((theme) => ({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.palette.background.paper,
+    border: '1px solid rgba(0, 0, 0, 0.05)',
+    backgroundColor: theme.palette.cards.background,
   },
   search: {
     fontSize: '0.875rem',
     marginRight: 'auto',
     borderBottom: `1px solid ${theme.palette.border.main}`,
     marginLeft: theme.spacing(6.25),
-  },
-  input: {
-    '&:-webkit-autofill': {
-      WebkitTextFillColor: theme.palette.text.secondary,
-      WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
-    },
   },
   root: {
     backgroundColor: theme.palette.background.paper,
@@ -37,12 +26,12 @@ const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(0.5),
     marginRight: theme.spacing(6.25),
+    height: '2.5rem',
     minWidth: '9rem',
   },
   selectText: {
-    color: theme.palette.border.main,
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(0.4),
+    height: '2.5rem',
+    padding: theme.spacing(0.5),
   },
 
   // Table and Table Data Properties
@@ -53,8 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tableMain: {
     marginTop: theme.spacing(4.25),
-    border: `1px solid ${theme.palette.background.paper}`,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.cards.background,
     height: '29.220rem',
     '&::-webkit-scrollbar': {
       width: '0.2em',
@@ -63,10 +51,7 @@ const useStyles = makeStyles((theme) => ({
       webkitBoxShadow: `inset 0 0 6px ${theme.palette.common.black}`,
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: theme.palette.secondary.dark,
-    },
-    '&:not(:last-child)': {
-      borderBottom: 0,
+      backgroundColor: theme.palette.primary.main,
     },
   },
   tableHead: {
@@ -76,24 +61,12 @@ const useStyles = makeStyles((theme) => ({
       fontWeight: 'bold',
     },
     '& th': {
-      backgroundColor: theme.palette.background.paper,
-      color: theme.palette.text.secondary,
+      backgroundColor: theme.palette.cards.background,
     },
   },
   headerStatus: {
     paddingLeft: theme.spacing(10),
-    color: theme.palette.text.hint,
-  },
-  scheduleName: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
-    paddingLeft: theme.spacing(3.75),
-    paddingTop: theme.spacing(1.5),
-  },
-  startDate: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
-    paddingTop: theme.spacing(1.5),
+    color: theme.palette.text.disabled,
   },
   headerStatus1: {
     paddingLeft: theme.spacing(8),
@@ -106,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
   },
   workflowName: {
     borderRight: `1px solid ${theme.palette.border.main}`,
-    color: theme.palette.text.hint,
+    color: theme.palette.text.disabled,
   },
   sortDiv: {
     display: 'flex',
@@ -114,17 +87,16 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1.25),
   },
   workflowNameData: {
-    maxWidth: '16.625rem',
+    maxWidth: '15.625rem',
     paddingLeft: theme.spacing(6.25),
     borderRight: `1px solid ${theme.palette.border.main}`,
   },
   regularity: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+    color: theme.palette.text.disabled,
   },
   targetCluster: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+    paddingLeft: theme.spacing(5),
+    color: theme.palette.text.disabled,
   },
   clusterStartDate: {
     paddingLeft: theme.spacing(10),
@@ -150,11 +122,10 @@ const useStyles = makeStyles((theme) => ({
   },
   showExp: {
     paddingLeft: theme.spacing(1),
-    color: theme.palette.text.primary,
-    opacity: 0.6,
+    color: theme.palette.text.disabled,
   },
   clusterData: {
-    paddingTop: theme.spacing(1.25),
+    paddingLeft: theme.spacing(5),
   },
   optionBtn: {
     marginLeft: theme.spacing(-6.25),
@@ -165,9 +136,6 @@ const useStyles = makeStyles((theme) => ({
   timeDiv: {
     display: 'flex',
     flexDirection: 'row',
-  },
-  dark: {
-    color: theme.palette.text.disabled,
   },
 
   // Menu option with icon
@@ -192,30 +160,36 @@ const useStyles = makeStyles((theme) => ({
     width: '1.2rem',
     height: '1.2rem',
   },
+  rerunBtn: {
+    marginTop: theme.spacing(0.1),
+    marginLeft: theme.spacing(-0.375),
+    width: '1.2rem',
+    height: '1.2rem',
+  },
   // Experiment Weights PopOver Property
   weightDiv: {
-    width: '15.1875rem',
+    width: '18.1875rem',
     padding: theme.spacing(3.125, 2.6),
+  },
+  dark: {
+    color: theme.palette.text.disabled,
   },
   weightInfo: {
     display: 'flex',
     flexDirection: 'row',
-    paddingBottom: theme.spacing(0.625),
+    paddingBottom: theme.spacing(1),
   },
   points: {
     marginLeft: 'auto',
     color: (props) =>
-      props >= 4 && props <= 6
+      props >= 3 && props <= 6
         ? theme.palette.warning.main
         : props >= 7
-        ? theme.palette.primary.dark
-        : theme.palette.error.dark,
+        ? theme.palette.success.main
+        : theme.palette.error.main,
     fontWeight: 500,
   },
-  headerIcon: {
-    color: theme.palette.text.primary,
-    opacity: 0.6,
-  },
+
   // Modal
   modalDiv: {
     display: 'flex',
@@ -226,13 +200,6 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('lg')]: {
       padding: theme.spacing(15),
     },
-  },
-  successful: {
-    fontSize: '2.2rem',
-    fontWeight: 'bold',
-  },
-  small: {
-    fontSize: '1.8rem',
   },
   modalHeader: {
     fontSize: '2.125rem',
@@ -251,39 +218,80 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'space-between',
     width: '16rem',
   },
-  pagination: {
-    marginTop: theme.spacing(-0.25),
-    borderTop: `1px solid ${theme.palette.border.main}`,
+  w7: { width: '7rem' },
+
+  scheduleDetailsFlex: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    margin: theme.spacing(2),
   },
-  closeButton: {
-    borderColor: theme.palette.border.main,
+  scheduleDetailsValue: {
+    width: '50%',
+    textAlign: 'left',
+  },
+
+  boldText: {
+    fontWeight: 'bold',
+  },
+
+  buttonTransform: {
+    textTransform: 'none',
+  },
+
+  // Save Template
+  saveTemplateRoot: {
+    margin: theme.spacing(8, 5, 5, 5),
+
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  SaveTemplateTxt: {
+    fontWeight: 500,
+    fontSize: '1.5rem',
+  },
+  NoteTxt: {
+    fontSize: '0.875rem',
+    fontWeight: 400,
+    margin: theme.spacing(2, 0, 2.75, 0),
+    color: theme.palette.warning.main,
+  },
+  InputFieldTemplate: {
+    width: '98%',
+  },
+  footerTemplateDiv: {
+    width: '98%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing(6.75),
+  },
+  errorTemplateDiv: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  editor: {
+    width: '100%',
+  },
+  errorYamlText: {
+    fontSize: '1rem',
+    color: theme.palette.border.error,
+    marginLeft: theme.spacing(1.375),
+  },
+  templateButtonsDiv: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  saveButtonTemplate: {
+    marginLeft: theme.spacing(1),
+  },
+  cancelIcon: {
+    fontSize: '1rem',
+    marginRight: theme.spacing(1),
   },
 }));
 
 export default useStyles;
-
-export const useOutlinedInputStyles = makeStyles((theme: Theme) => ({
-  root: {
-    '& $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    '&:hover $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    '&$focused $notchedOutline': {
-      borderColor: theme.palette.border.main,
-    },
-    height: '2.5rem',
-    color: theme.palette.text.primary,
-  },
-  focused: {},
-  notchedOutline: {},
-}));
-
-export const StyledTableCell = withStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      borderBottom: `1px solid ${theme.palette.border.main}`,
-    },
-  })
-)(TableCell);

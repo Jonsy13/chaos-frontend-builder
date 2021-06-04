@@ -7,6 +7,7 @@ LABEL maintainer="LitmusChaos"
 
 ARG REACT_APP_KB_CHAOS_VERSION
 ARG REACT_APP_BUILD_TIME
+ARG REACT_APP_HUB_BRANCH_NAME
 
 # Checking environment variables
 RUN env
@@ -30,7 +31,6 @@ RUN npm run build
 
 # Stage 2: the production environment
 FROM nginxinc/nginx-unprivileged:1.18-alpine
-
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY  --from=react-build /frontend/build /usr/share/nginx/html

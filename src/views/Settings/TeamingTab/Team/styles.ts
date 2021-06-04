@@ -1,11 +1,21 @@
-import { makeStyles, Theme } from '@material-ui/core/styles';
+import { TableCell } from '@material-ui/core';
+import {
+  createStyles,
+  makeStyles,
+  Theme,
+  withStyles,
+} from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   UMDiv: {
-    marginTop: theme.spacing(10.75),
+    marginTop: theme.spacing(6.65),
   },
   headerText: {
     fontSize: '1.5625rem',
+  },
+  myProjectText: {
+    marginBottom: theme.spacing(1.5),
+    color: theme.palette.primary.main,
   },
   members: {
     display: 'flex',
@@ -29,20 +39,21 @@ const useStyles = makeStyles((theme: Theme) => ({
   table: {
     backgroundColor: theme.palette.background.paper,
     height: '25.125rem',
-    '&::-webkit-scrollbar': {
-      width: '0.2em',
+
+    '& ::-webkit-scrollbar': {
+      width: '0.2rem',
     },
-    '&::-webkit-scrollbar-track': {
-      webkitBoxShadow: `inset 0 0 6px ${theme.palette.common.black}`,
+    '& ::-webkit-scrollbar-track': {
+      marginTop: theme.spacing(1),
+      webkitBoxShadow: `inset 0 0 8px ${theme.palette.common.black}`,
     },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: theme.palette.secondary.dark,
+    '& ::-webkit-scrollbar-thumb': {
+      backgroundColor: theme.palette.primary.light,
+      borderRadius: 8,
     },
   },
   tablePagination: {
-    marginTop: theme.spacing(-0.25),
     height: '3.5rem',
-    borderTop: `1px solid ${theme.palette.border.main}`,
   },
   toolbar: {
     height: '6.125rem',
@@ -139,7 +150,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: theme.palette.primary.main,
     width: '2.56rem',
     height: '2.56rem',
-    color: theme.palette.text.primary,
     alignContent: 'right',
     marginRight: theme.spacing(2.5),
     [theme.breakpoints.down('sm')]: {
@@ -214,24 +224,20 @@ const useStyles = makeStyles((theme: Theme) => ({
   myProject: {
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: theme.palette.cards.background,
+    backgroundColor: theme.palette.cards.header,
     padding: theme.spacing(0, 5.3, 0, 5.3),
   },
   project: {
     margin: theme.spacing(3.875, 'auto', 2.5, 'auto'),
-    display: 'flex',
-    alignItems: 'center',
   },
   projectName: {
-    margin: theme.spacing(0, 0, 0, 1.56),
     textTransform: 'uppercase',
     fontWeight: 500,
     fontSize: '1rem',
   },
-
   active: {
     textTransform: 'capitalize',
-    color: theme.palette.primary.light,
+    color: theme.palette.primary.main,
     fontWeight: 500,
     fontSize: '1rem',
   },
@@ -259,13 +265,14 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
+    background: theme.palette.cards.header,
   },
   projectInfoProjectStats: {
     display: 'flex',
     paddingBottom: theme.spacing(1),
     '& p:first-child': {
       fontSize: '5.625rem',
-      color: theme.palette.text.primary,
+      color: theme.palette.text.hint,
     },
     '& p:nth-child(2)': {
       display: 'flex',
@@ -371,4 +378,20 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
+
+// StyledTableCell used to create custom table cell
+export const StyledTableCell = withStyles((theme: Theme) =>
+  createStyles({
+    head: {
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.disabled,
+      borderBottom: `1px solid ${theme.palette.border.main}`,
+    },
+    body: {
+      backgroundColor: theme.palette.background.paper,
+      fontSize: '0.875rem',
+    },
+  })
+)(TableCell);
+
 export default useStyles;

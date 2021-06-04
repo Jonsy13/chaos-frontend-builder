@@ -1,84 +1,28 @@
-import { fade, makeStyles, Theme } from '@material-ui/core/styles';
+import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   drawer: {
     width: '100%',
     height: '100%',
-    borderRight: '1px solid rgba(45, 166, 96, 0.2)',
   },
   drawerPaper: {
     width: '100%',
+    background: theme.palette.sidebarMenu,
     position: 'relative',
-    backgroundColor: theme.palette.sidebarMenu,
-    color: 'inherit',
   },
-  appsDiv: {
-    display: 'flex',
-    padding: 0,
-  },
-  iconColor: {
-    color: theme.palette.text.primary,
-    '&:hover': {
-      color: theme.palette.primary.main,
-    },
-  },
-  iconButton: {
-    padding: 0,
-  },
-  appsIcon: {
-    margin: theme.spacing(3.5, 3.375, 3.375, 3.5),
-    '& img': {
-      userDrag: 'none',
-    },
-  },
-  switchText: {
-    color: theme.palette.text.hint,
-    '& span': {
-      fontWeight: 700,
-      fontSize: '0.875rem',
-      margin: theme.spacing(6, 0, 4, 2.375),
-    },
-  },
-  popOverList: {
-    background: theme.palette.cards.background,
-    minWidth: '17.75rem',
-    minHeight: '15.1875rem',
-    paddingLeft: theme.spacing(3.5),
-    borderRadius: '0.5rem',
-    opacity: '98%',
-  },
-  popOverPaper: {
-    marginLeft: theme.spacing(-2),
-    marginTop: theme.spacing(-0.2),
-  },
-  homeLink: {
-    textDecoration: 'none',
-  },
-  clearIconBackground: {
-    background: fade(theme.palette.cards.background, 0.9),
-  },
-  logo: {
-    left: theme.spacing(4.375),
-  },
+
   drawerListItem: {
-    display: 'flex',
-    height: '3.187rem',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    height: '3.1875rem',
+    transition: '0.8s',
     '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
-      color: theme.palette.text.primary,
-      '& path': {
-        fill: theme.palette.text.primary,
-      },
+      backgroundColor: theme.palette.disabledBackground,
     },
   },
   active: {
-    backgroundColor: `${theme.palette.primary.main} !important`,
+    backgroundColor: `${theme.palette.primary.light} !important`,
     color: theme.palette.secondary.contrastText,
     '& path': {
-      fill: theme.palette.text.secondary,
+      fill: theme.palette.common.white,
     },
   },
   listIcon: {
@@ -89,34 +33,25 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: '1rem',
   },
   drawerList: {
-    marginTop: theme.spacing(3.75),
-    height: '16.68rem',
+    marginTop: theme.spacing(8.375),
+    '& #quickActions': {
+      width: '80%',
+      border: `1px solid ${theme.palette.border.main}`,
+    },
   },
-  kuberaChaosLogo: {
-    marginLeft: theme.spacing(2),
-    height: '5rem',
-    width: '8.5rem',
+  versionlogo: {
+    width: '1.25rem',
+    height: '2.185rem',
   },
-  info: {
-    marginTop: 'auto',
-    marginLeft: theme.spacing(5),
-    paddingBottom: theme.spacing(3.75),
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  logodiv: {
-    color: theme.palette.text.primary,
-    display: 'flex',
-    marginTop: theme.spacing(0.8125),
-  },
-  mayadataLogo: {
-    margin: theme.spacing(-0.75, 0, 0, 1.5),
-    height: '2rem',
-    width: '6rem',
-  },
-  versionAndBuildTimeText: {
+  versionText: {
     margin: 'auto',
-    color: theme.palette.text.primary,
+    marginLeft: theme.spacing(1.25),
+    fontSize: '0.75rem',
+  },
+  versionDiv: {
+    marginTop: 'auto',
+    marginBottom: theme.spacing(2),
+    marginLeft: theme.spacing(4),
     fontSize: '0.75rem',
   },
 }));

@@ -1,10 +1,10 @@
 import { AppBar, Typography } from '@material-ui/core';
 import useTheme from '@material-ui/core/styles/useTheme';
 import Tabs from '@material-ui/core/Tabs';
+import { ButtonFilled } from 'litmus-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import ButtonFilled from '../../components/Button/ButtonFilled';
 import { StyledTab, TabPanel } from '../../components/Tabs';
 import Scaffold from '../../containers/layouts/Scaffold';
 import useActions from '../../redux/actions';
@@ -13,6 +13,7 @@ import * as TemplateSelectionActions from '../../redux/actions/template';
 import * as WorkflowActions from '../../redux/actions/workflow';
 import { history } from '../../redux/configureStore';
 import { RootState } from '../../redux/reducers';
+import { getProjectID, getProjectRole } from '../../utils/getSearchParams';
 import BrowseSchedule from '../../views/ChaosWorkflows/BrowseSchedule';
 import BrowseWorkflow from '../../views/ChaosWorkflows/BrowseWorkflow';
 import Templates from '../../views/ChaosWorkflows/Templates';
@@ -21,13 +22,12 @@ import useStyles from './styles';
 const Workflows = () => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const projectID = getProjectID();
+  const userRole = getProjectRole();
   const workflowAction = useActions(WorkflowActions);
   const template = useActions(TemplateSelectionActions);
   const workflowTabValue = useSelector(
     (state: RootState) => state.tabNumber.workflows
-  );
-  const agentConfigured = useSelector(
-    (state: RootState) => state.configureAgent.agentConfigured
   );
   const tabs = useActions(TabActions);
 
@@ -43,19 +43,19 @@ const Workflows = () => {
       customWorkflows: [],
     });
     template.selectTemplate({ selectedTemplateID: 0, isDisable: true });
-    history.push('/create-workflow');
+    history.push({
+      pathname: '/create-workflow',
+      search: `?projectID=${projectID}&projectRole=${userRole}`,
+    });
   };
+
   return (
     <Scaffold>
       <section>
         <div className={classes.header}>
           <Typography variant="h3">Chaos Workflows</Typography>
           <div className={classes.scheduleBtn}>
-            <ButtonFilled
-              isDisabled={!agentConfigured}
-              isPrimary={false}
-              handleClick={handleScheduleWorkflow}
-            >
+            <ButtonFilled onClick={handleScheduleWorkflow}>
               {t('workflows.scheduleAWorkflow')}
             </ButtonFilled>
           </div>
@@ -67,7 +67,7 @@ const Workflows = () => {
           onChange={handleChange}
           TabIndicatorProps={{
             style: {
-              backgroundColor: theme.palette.secondary.dark,
+              backgroundColor: theme.palette.highlight,
             },
           }}
           variant="fullWidth"
@@ -84,10 +84,6 @@ const Workflows = () => {
             label={`${t('workflows.templates')}`}
             data-cy="templates"
           />
-          {/* <StyledTab
-            label={`${t('workflows.analytics')}`}
-            data-cy="analyticsWorkflow"
-          /> */}
         </Tabs>
       </AppBar>
       <TabPanel value={workflowTabValue} index={0}>
@@ -99,9 +95,6 @@ const Workflows = () => {
       <TabPanel value={workflowTabValue} index={2}>
         <Templates />
       </TabPanel>
-      {/* <TabPanel value={workflowTabValue} index={3}>
-        <WorkflowComparisonTable />
-      </TabPanel> */}
     </Scaffold>
   );
 };

@@ -2,8 +2,8 @@ import { Typography } from '@material-ui/core';
 import React from 'react';
 import BackButton from '../../components/Button/BackButton';
 import Scaffold from '../../containers/layouts/Scaffold';
-import DataSourceList from '../../views/AnalyticsDashboard/DataSource/Cards/data';
-import DataSourceCards from '../../views/AnalyticsDashboard/DataSource/Cards/dataSourceCards';
+import DataSourceList from '../../views/Analytics/DataSources/Cards/data';
+import DataSourceCards from '../../views/Analytics/DataSources/Cards/dataSourceCards';
 import useStyles from './styles';
 
 const DataSourceSelectPage: React.FC = () => {
@@ -13,7 +13,7 @@ const DataSourceSelectPage: React.FC = () => {
     <Scaffold>
       <div className={classes.root}>
         <div className={classes.button}>
-          <BackButton isDisabled={false} />
+          <BackButton />
         </div>
         <Typography className={classes.heading}>
           <strong>Select a data source</strong>

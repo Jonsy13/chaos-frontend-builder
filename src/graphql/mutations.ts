@@ -12,12 +12,39 @@ export const CREATE_WORKFLOW = gql`
   }
 `;
 
+export const ADD_WORKFLOW_TEMPLATE = gql`
+  mutation addWorkflowTemplate($data: TemplateInput!) {
+    createManifestTemplate(templateInput: $data) {
+      template_name
+      template_id
+    }
+  }
+`;
+
+export const DELETE_WORKFLOW_TEMPLATE = gql`
+  mutation deleteManifestTemplate($data: String!) {
+    deleteManifestTemplate(template_id: $data)
+  }
+`;
+
+export const CREATE_USER = gql`
+  mutation CreateUser($user: CreateUserInput!) {
+    createUser(user: $user) {
+      username
+      created_at
+      updated_at
+      removed_at
+    }
+  }
+`;
+
 export const CREATE_PROJECT = gql`
-  mutation createProject($project: String!) {
-    createProject(projectName: $project) {
+  mutation createProject($projectName: String!) {
+    createProject(projectName: $projectName) {
       members {
-        user_uid
+        user_id
         role
+        user_name
         invitation
         joined_at
       }
@@ -27,13 +54,19 @@ export const CREATE_PROJECT = gql`
   }
 `;
 
+export const UPDATE_PROJECT_NAME = gql`
+  mutation updateProjectName($projectID: String!, $projectName: String!) {
+    updateProjectName(projectID: $projectID, projectName: $projectName)
+  }
+`;
+
 export const SEND_INVITE = gql`
   mutation sendInvite($member: MemberInput!) {
     sendInvitation(member: $member) {
-      user_uid
+      user_id
+      user_name
       role
       invitation
-      joined_at
     }
   }
 `;
@@ -90,6 +123,100 @@ export const USER_CLUSTER_REG = gql`
   }
 `;
 
+export const ADD_MY_HUB = gql`
+  mutation addMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
+    addMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const SAVE_MY_HUB = gql`
+  mutation saveMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
+    saveMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const UPDATE_MY_HUB = gql`
+  mutation updateMyHub($MyHubDetails: UpdateMyHub!, $projectID: String!) {
+    updateMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
+      HubName
+      RepoURL
+      RepoBranch
+    }
+  }
+`;
+
+export const SYNC_REPO = gql`
+  mutation syncHub($id: ID!) {
+    syncHub(id: $id) {
+      id
+      RepoURL
+      RepoBranch
+      IsAvailable
+      TotalExp
+      HubName
+    }
+  }
+`;
+
+export const DELETE_HUB = gql`
+  mutation deleteMyHub($hub_id: String!) {
+    deleteMyHub(hub_id: $hub_id)
+  }
+`;
+
+export const GENERATE_SSH = gql`
+  mutation generateSSHKey {
+    generaterSSHKey {
+      privateKey
+      publicKey
+    }
+  }
+`;
+
+export const DELETE_CLUSTER = gql`
+  mutation deleteCluster($cluster_id: String!) {
+    deleteClusterReg(cluster_id: $cluster_id)
+  }
+`;
+
+export const ENABLE_GITOPS = gql`
+  mutation enableGitOps($gitConfig: GitConfig!) {
+    enableGitOps(config: $gitConfig)
+  }
+`;
+
+export const UPDATE_GITOPS = gql`
+  mutation updateGitOps($gitConfig: GitConfig!) {
+    updateGitOps(config: $gitConfig)
+  }
+`;
+
+export const DISABLE_GITOPS = gql`
+  mutation disableGitOPs($data: String!) {
+    disableGitOps(project_id: $data)
+  }
+`;
+
+export const RERUN_CHAOS_WORKFLOW = gql`
+  mutation rerunChaosWorkflow($data: String!) {
+    reRunChaosWorkFlow(workflowID: $data)
+  }
+`;
+
+export const LEAVE_PROJECT = gql`
+  mutation LeaveProject($data: MemberInput!) {
+    leaveProject(member: $data)
+  }
+`;
+
 export const CREATE_DATASOURCE = gql`
   mutation createDataSource($DSInput: DSInput) {
     createDataSource(datasource: $DSInput) {
@@ -135,36 +262,6 @@ export const DELETE_DATASOURCE = gql`
   }
 `;
 
-export const ADD_MY_HUB = gql`
-  mutation addMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
-    addMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
-      HubName
-      RepoURL
-      RepoBranch
-    }
-  }
-`;
-
-export const SAVE_MY_HUB = gql`
-  mutation saveMyHub($MyHubDetails: CreateMyHub!, $projectID: String!) {
-    saveMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
-      HubName
-      RepoURL
-      RepoBranch
-    }
-  }
-`;
-
-export const UPDATE_MY_HUB = gql`
-  mutation updateMyHub($MyHubDetails: UpdateMyHub!, $projectID: String!) {
-    updateMyHub(myhubInput: $MyHubDetails, projectID: $projectID) {
-      HubName
-      RepoURL
-      RepoBranch
-    }
-  }
-`;
-
 export const CREATE_DASHBOARD = gql`
   mutation createDashBoard($createDBInput: createDBInput) {
     createDashBoard(dashboard: $createDBInput)
@@ -189,36 +286,40 @@ export const UPDATE_PANEL = gql`
   }
 `;
 
-export const SYNC_REPO = gql`
-  mutation syncHub($id: ID!) {
-    syncHub(id: $id) {
-      id
-      RepoURL
-      RepoBranch
-      IsAvailable
-      TotalExp
-      HubName
+export const ADD_IMAGE_REGISTRY = gql`
+  mutation createImageRegistry(
+    $projectID: String!
+    $imageRegistryInfo: imageRegistryInput!
+  ) {
+    createImageRegistry(
+      project_id: $projectID
+      imageRegistryInfo: $imageRegistryInfo
+    ) {
+      image_registry_info {
+        image_repo_name
+        image_registry_name
+        image_registry_type
+      }
     }
   }
 `;
 
-export const DELETE_HUB = gql`
-  mutation deleteMyHub($hub_id: String!) {
-    deleteMyHub(hub_id: $hub_id)
-  }
-`;
-
-export const DELETE_CLUSTER = gql`
-  mutation deleteCluster($cluster_id: String!) {
-    deleteClusterReg(cluster_id: $cluster_id)
-  }
-`;
-
-export const GENERATE_SSH = gql`
-  mutation generateSSHKey {
-    generaterSSHKey {
-      privateKey
-      publicKey
+export const UPDATE_IMAGE_REGISTRY = gql`
+  mutation updateImageRegistry(
+    $imageRegistryID: String!
+    $projectID: String!
+    $imageRegistryInfo: imageRegistryInput!
+  ) {
+    updateImageRegistry(
+      image_registry_id: $imageRegistryID
+      project_id: $projectID
+      imageRegistryInfo: $imageRegistryInfo
+    ) {
+      image_registry_info {
+        image_repo_name
+        image_registry_name
+        image_registry_type
+      }
     }
   }
 `;

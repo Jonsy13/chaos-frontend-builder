@@ -1,34 +1,28 @@
-/* eslint-disable array-callback-return */
-/* eslint-disable consistent-return */
-import { useQuery } from '@apollo/client/react/hooks';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   Box,
-  createStyles,
   FormControl,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
   Tabs,
-  Theme,
   Toolbar,
   Typography,
-  withStyles,
+  useTheme,
 } from '@material-ui/core';
-import { Search } from 'kubera-ui';
+import { EditableText, Search } from 'litmus-ui';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import config from '../../../../config';
-import { GET_PROJECT, GET_PROJECTS } from '../../../../graphql';
+import Center from '../../../../containers/layouts/Center';
+import {
+  ALL_USERS,
+  GET_PROJECT,
+  LIST_PROJECTS,
+  UPDATE_PROJECT_NAME,
+} from '../../../../graphql';
+import { UserInvite } from '../../../../models/graphql/invite';
 import {
   Member,
   Project,
@@ -36,30 +30,13 @@ import {
   ProjectDetailVars,
   Projects,
 } from '../../../../models/graphql/user';
-import { CurrentUserData, JWTData } from '../../../../models/userData';
-import { RootState } from '../../../../redux/reducers';
-import getToken from '../../../../utils/getToken';
-import { getCoreToken, getUserDetailsFromJwt } from '../../../../utils/user';
+import { getUserId } from '../../../../utils/auth';
+import { getProjectID } from '../../../../utils/getSearchParams';
 import Invitation from '../Invitation';
 import InviteNew from '../InviteNew';
-import InvitedTableData from './invitedTableData';
+import InvitedTable from './invitedTable';
+import MembersTable from './membersTable';
 import useStyles from './styles';
-import TableData from './tableData';
-
-// StyledTableCell used to create custom table cell
-const StyledTableCell = withStyles((theme: Theme) =>
-  createStyles({
-    head: {
-      backgroundColor: theme.palette.background.paper,
-      color: theme.palette.text.disabled,
-      borderBottom: `1px solid ${theme.palette.border.main}`,
-    },
-    body: {
-      backgroundColor: theme.palette.background.paper,
-      fontSize: '0.875rem',
-    },
-  })
-)(TableCell);
 
 interface FilterOptions {
   search: string;
@@ -102,74 +79,62 @@ function tabProps(index: any) {
   };
 }
 
-// TeammingTab displays team member table
+// TeamingTab displays team member table
 const TeamingTab: React.FC = () => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const theme = useTheme();
 
-  const userData = useSelector((state: RootState) => state.userData);
+  const projectID = getProjectID();
+
   const [loading, setLoading] = useState(true);
 
-  const userDetails: JWTData = getUserDetailsFromJwt(getToken());
+  const userID = getUserId();
 
   // for response data
   const [accepted, setAccepted] = useState<Member[]>([]);
   const [notAccepted, setNotAccepted] = useState<Member[]>([]);
 
-  const [allUsers, setAllUsers] = useState<CurrentUserData[]>([]);
+  const [allUsers, setAllUsers] = useState<UserInvite[]>([]);
 
-  const [activeTab, setActiveTab] = React.useState(0);
-
-  const [activeColor, setActiveColor] = React.useState<string>('#28CB69');
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, actTab: number) => {
     setActiveTab(actTab);
-    setActiveColor('#28CB69');
   };
 
-  const { data, refetch } = useQuery<ProjectDetail, ProjectDetailVars>(
-    GET_PROJECT,
-    {
-      variables: { projectID: userData.selectedProjectID },
-      onCompleted: () => {
-        const memberList = data?.getProject.members ?? [];
-        const acceptedUsers: Member[] = [];
-        const notAcceptedUsers: Member[] = [];
+  const { data: dataB, refetch: refetchGetProject } = useQuery<
+    ProjectDetail,
+    ProjectDetailVars
+  >(GET_PROJECT, {
+    variables: { projectID },
+    fetchPolicy: 'cache-and-network',
+  });
 
-        memberList.forEach((member) => {
-          if (member.invitation === 'Accepted') {
-            acceptedUsers.push(member);
-          } else if (
-            member.user_uid !== userDetails.uid &&
-            member.invitation !== 'Accepted'
-          ) {
-            notAcceptedUsers.push(member);
-          }
-        });
-        setAccepted([...acceptedUsers]);
-        setNotAccepted([...notAcceptedUsers]);
+  const { refetch: refetchAllUsers } = useQuery(ALL_USERS, {
+    skip: !dataB,
+    onCompleted: (data) => {
+      setAllUsers([...data.users]);
+      setLoading(false);
+      const memberList = dataB?.getProject.members ?? [];
+      const acceptedUsers: Member[] = [];
+      const notAcceptedUsers: Member[] = [];
 
-        fetch(`${config.auth.url}/v1/user`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getCoreToken()}`,
-          },
-        })
-          .then((response) => {
-            return response.json();
-          })
-          .then((res) => {
-            setAllUsers([...res]);
-            setLoading(false);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+      memberList.forEach((member) => {
+        if (member.invitation === 'Accepted') {
+          acceptedUsers.push(member);
+        } else if (
+          member.user_id !== userID &&
+          member.invitation !== 'Accepted'
+        ) {
+          notAcceptedUsers.push(member);
+        }
+      });
+      setAccepted([...acceptedUsers]);
+      setNotAccepted([...notAcceptedUsers]);
+    },
+    fetchPolicy: 'cache-and-network',
+  });
 
   // State for pagination
   const [paginationData, setPaginationData] = useState<PaginationData>({
@@ -190,7 +155,7 @@ const TeamingTab: React.FC = () => {
         .filter((dataRow: Member) => {
           return allUsers
             .filter((data) => {
-              return dataRow.user_uid === data.uid;
+              return dataRow.user_id === data.id;
             })[0]
             .username.toLowerCase()
             .includes(filters.search.toLowerCase());
@@ -209,7 +174,7 @@ const TeamingTab: React.FC = () => {
         .filter((dataRow: Member) => {
           return allUsers
             .filter((data) => {
-              return dataRow.user_uid === data.uid;
+              return dataRow.user_id === data.id;
             })[0]
             .username.toLowerCase()
             .includes(filters.search.toLowerCase());
@@ -222,18 +187,23 @@ const TeamingTab: React.FC = () => {
         })
     : [];
 
+  const [inviteNewOpen, setInviteNewOpen] = React.useState(false);
+  const [deleteMemberOpen, setDeleteMemberOpen] = React.useState(false);
+  const [cancelInviteOpen, setCancelInviteOpen] = React.useState(false);
+
   function showModal() {
-    refetch();
+    refetchGetProject();
+    refetchAllUsers();
   }
 
   const [projectOwnerCount, setProjectOwnerCount] = useState<number>(0);
   const [projectOtherCount, setProjectOtherCount] = useState<number>(0);
   const [invitationsCount, setInvitationCount] = useState<number>(0);
   const [projects, setProjects] = useState<Project[]>([]);
-  const { data: dataProject } = useQuery<Projects>(GET_PROJECTS, {
+  const { data: dataProject } = useQuery<Projects>(LIST_PROJECTS, {
     onCompleted: () => {
-      if (dataProject?.getProjects) {
-        setProjects(dataProject?.getProjects);
+      if (dataProject?.listProjects) {
+        setProjects(dataProject?.listProjects);
       }
     },
     fetchPolicy: 'cache-and-network',
@@ -242,17 +212,17 @@ const TeamingTab: React.FC = () => {
     let projectOwner = 0;
     let projectInvitation = 0;
     let projectOther = 0;
-    projects.map((project) => {
+    projects.forEach((project) => {
       project.members.forEach((member: Member) => {
-        if (member.user_uid === userDetails.uid && member.role === 'Owner') {
+        if (member.user_id === userID && member.role === 'Owner') {
           projectOwner++;
         } else if (
-          member.user_uid === userDetails.uid &&
+          member.user_id === userID &&
           member.invitation === 'Pending'
         ) {
           projectInvitation++;
         } else if (
-          member.user_uid === userDetails.uid &&
+          member.user_id === userID &&
           member.role !== 'Owner' &&
           member.invitation === 'Accepted'
         ) {
@@ -263,16 +233,25 @@ const TeamingTab: React.FC = () => {
     setProjectOwnerCount(projectOwner);
     setInvitationCount(projectInvitation);
     setProjectOtherCount(projectOther);
-  }, [projects, dataProject]);
+  }, [projects, dataProject, deleteMemberOpen, inviteNewOpen, activeTab]);
+
+  const [updateProjectName] = useMutation(UPDATE_PROJECT_NAME, {
+    refetchQueries: [
+      {
+        query: GET_PROJECT,
+        variables: { projectID },
+      },
+    ],
+  });
   return (
     <div>
       {!loading ? (
         <>
           <div className={classes.row1}>
-            <Paper className={classes.projectInfo}>
+            <Paper className={classes.projectInfo} elevation={0}>
               <div className={classes.projectInfoProjectStats}>
                 <Typography>{projectOtherCount + projectOwnerCount}</Typography>
-                {projectOtherCount + projectOwnerCount > 1 ? (
+                {projectOtherCount + projectOwnerCount !== 1 ? (
                   <Typography>{t('settings.teamingTab.projects')}</Typography>
                 ) : (
                   <Typography>{t('settings.teamingTab.project')}</Typography>
@@ -297,7 +276,7 @@ const TeamingTab: React.FC = () => {
                 </div>
               </div>
             </Paper>
-            <Paper className={classes.teamInfo}>
+            <Paper className={classes.teamInfo} elevation={0}>
               <div className={classes.invitationButton}>
                 <div className={classes.invitationButtonFlex}>
                   {t('settings.teamingTab.invitations')}
@@ -308,19 +287,36 @@ const TeamingTab: React.FC = () => {
             </Paper>
           </div>
           <div className={classes.UMDiv}>
+            <Center>
+              <Typography className={classes.myProjectText}>
+                My Project
+              </Typography>
+            </Center>
             <div>
               <Paper className={classes.myProject} elevation={0}>
-                <div className={classes.project}>
-                  <img src="./icons/chaos-logo.svg" alt="Chaos Logo" />
-                  <Typography className={classes.projectName}>
-                    {userData.selectedProjectName}
-                  </Typography>
-                </div>
+                <Center>
+                  <div className={classes.project}>
+                    <EditableText
+                      label={t('settings.teamingTab.editProjectLabel')}
+                      defaultValue={dataB ? dataB.getProject.name : ''}
+                      onSave={(value) => {
+                        updateProjectName({
+                          variables: {
+                            projectID,
+                            projectName: value,
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                </Center>
                 <Toolbar data-cy="toolBarComponent" className={classes.toolbar}>
                   {/* Search user */}
-                  <div className={classes.toolbarFirstCol}>
+                  <div
+                    className={classes.toolbarFirstCol}
+                    data-cy="teamingSearch"
+                  >
                     <Search
-                      data-cy="teamingSearch"
                       id="input-with-icon-textfield"
                       placeholder={t('settings.teamingTab.label.search')}
                       value={filters.search}
@@ -340,7 +336,6 @@ const TeamingTab: React.FC = () => {
                       <FormControl
                         variant="outlined"
                         className={classes.formControl}
-                        color="secondary"
                         focused
                       >
                         <InputLabel className={classes.selectText}>
@@ -354,10 +349,12 @@ const TeamingTab: React.FC = () => {
                               ...filters,
                               role: event.target.value as string,
                             });
-                            setPaginationData({ ...paginationData, pageNo: 0 });
+                            setPaginationData({
+                              ...paginationData,
+                              pageNo: 0,
+                            });
                           }}
                           className={classes.selectText}
-                          color="secondary"
                         >
                           <MenuItem value="all">
                             {t('settings.teamingTab.label.options.all')}
@@ -374,7 +371,15 @@ const TeamingTab: React.FC = () => {
                         </Select>
                       </FormControl>
                     </div>
-                    <InviteNew showModal={showModal} />
+                    <InviteNew
+                      showModal={() => {
+                        showModal();
+
+                        setInviteNewOpen(false);
+                      }}
+                      handleOpen={() => setInviteNewOpen(true)}
+                      open={inviteNewOpen}
+                    />
                   </div>
                 </Toolbar>
                 <Tabs
@@ -382,7 +387,7 @@ const TeamingTab: React.FC = () => {
                   onChange={handleChange}
                   TabIndicatorProps={{
                     style: {
-                      backgroundColor: activeColor,
+                      backgroundColor: theme.palette.primary.main,
                     },
                   }}
                 >
@@ -421,170 +426,26 @@ const TeamingTab: React.FC = () => {
                 </Tabs>
               </Paper>
               <TabPanel value={activeTab} index={0}>
-                <Paper className={classes.root}>
-                  <TableContainer
-                    className={classes.table}
-                    elevation={0}
-                    component={Paper}
-                  >
-                    <Table stickyHeader aria-label="sticky table">
-                      <TableHead className={classes.TR}>
-                        <TableRow className={classes.TR}>
-                          <StyledTableCell className={classes.firstTC}>
-                            {t('settings.teamingTab.tableCell.name')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.role')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.email')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.joined')}
-                          </StyledTableCell>
-                          <StyledTableCell />
-                          <TableHead />
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {acceptedFilteredData.length > 0 ? (
-                          acceptedFilteredData
-                            .slice(
-                              paginationData.pageNo *
-                                paginationData.rowsPerPage,
-                              paginationData.pageNo *
-                                paginationData.rowsPerPage +
-                                paginationData.rowsPerPage
-                            )
-                            .map((row, index) => (
-                              <TableRow
-                                data-cy="teamingTableRow"
-                                key={row.user_uid}
-                                className={classes.TR}
-                              >
-                                <TableData index={index} row={row} />
-                              </TableRow>
-                            ))
-                        ) : (
-                          <TableRow>
-                            <StyledTableCell
-                              colSpan={5}
-                              className={classes.styledTC}
-                            >
-                              <Typography align="center">
-                                {t('settings.teamingTab.noUsers')}
-                              </Typography>
-                            </StyledTableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={acceptedFilteredData?.length ?? 0}
-                    rowsPerPage={paginationData.rowsPerPage}
-                    page={paginationData.pageNo}
-                    onChangePage={(_, page) =>
-                      setPaginationData({
-                        ...paginationData,
-                        pageNo: page,
-                      })
-                    }
-                    onChangeRowsPerPage={(event) =>
-                      setPaginationData({
-                        ...paginationData,
-                        pageNo: 0,
-                        rowsPerPage: parseInt(event.target.value, 10),
-                      })
-                    }
-                    className={classes.tablePagination}
-                  />
-                </Paper>
+                <MembersTable
+                  acceptedFilteredData={acceptedFilteredData}
+                  showModal={() => {
+                    showModal();
+                    setDeleteMemberOpen(false);
+                  }}
+                  handleOpen={() => setDeleteMemberOpen(true)}
+                  open={deleteMemberOpen}
+                />
               </TabPanel>
               <TabPanel value={activeTab} index={1}>
-                <Paper className={classes.root}>
-                  <TableContainer
-                    className={classes.table}
-                    elevation={0}
-                    component={Paper}
-                  >
-                    <Table stickyHeader aria-label="sticky table">
-                      <TableHead className={classes.TR}>
-                        <TableRow className={classes.TR}>
-                          <StyledTableCell className={classes.firstTC}>
-                            {t('settings.teamingTab.tableCell.name')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.role')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.email')}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {t('settings.teamingTab.tableCell.status')}
-                          </StyledTableCell>
-                          <StyledTableCell />
-                          <TableHead />
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {notAcceptedFilteredData.length > 0 ? (
-                          notAcceptedFilteredData
-                            .slice(
-                              paginationData.pageNo *
-                                paginationData.rowsPerPage,
-                              paginationData.pageNo *
-                                paginationData.rowsPerPage +
-                                paginationData.rowsPerPage
-                            )
-                            .map((row, index) => (
-                              <TableRow
-                                data-cy="teamingTableRow"
-                                key={row.user_uid}
-                                className={classes.TR}
-                              >
-                                <InvitedTableData index={index} row={row} />
-                              </TableRow>
-                            ))
-                        ) : (
-                          <TableRow>
-                            <StyledTableCell
-                              colSpan={5}
-                              className={classes.styledTC}
-                            >
-                              <Typography align="center">
-                                {t('settings.teamingTab.noUsers')}
-                              </Typography>
-                            </StyledTableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={notAcceptedFilteredData?.length ?? 0}
-                    rowsPerPage={paginationData.rowsPerPage}
-                    page={paginationData.pageNo}
-                    onChangePage={(_, page) =>
-                      setPaginationData({
-                        ...paginationData,
-                        pageNo: page,
-                      })
-                    }
-                    onChangeRowsPerPage={(event) =>
-                      setPaginationData({
-                        ...paginationData,
-                        pageNo: 0,
-                        rowsPerPage: parseInt(event.target.value, 10),
-                      })
-                    }
-                    className={classes.tablePagination}
-                  />
-                </Paper>
+                <InvitedTable
+                  notAcceptedFilteredData={notAcceptedFilteredData}
+                  showModal={() => {
+                    showModal();
+                    setCancelInviteOpen(false);
+                  }}
+                  handleOpen={() => setCancelInviteOpen(true)}
+                  open={cancelInviteOpen}
+                />
               </TabPanel>
               {/* user table */}
             </div>

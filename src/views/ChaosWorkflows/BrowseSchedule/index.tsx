@@ -6,11 +6,11 @@ import {
   InputBase,
   InputLabel,
   MenuItem,
-  OutlinedInput,
   Paper,
   Select,
   Table,
   TableBody,
+  TableCell,
   TableContainer,
   TableHead,
   TablePagination,
@@ -21,28 +21,35 @@ import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import SearchIcon from '@material-ui/icons/Search';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import YAML from 'yaml';
 import Loader from '../../../components/Loader';
-import { DELETE_SCHEDULE, SCHEDULE_DETAILS } from '../../../graphql';
+import {
+  DELETE_SCHEDULE,
+  SCHEDULE_DETAILS,
+  UPDATE_SCHEDULE,
+} from '../../../graphql';
+import { WeightMap } from '../../../models/graphql/createWorkflowData';
 import {
   DeleteSchedule,
   ScheduleDataVars,
   Schedules,
   ScheduleWorkflow,
 } from '../../../models/graphql/scheduleData';
-import { RootState } from '../../../redux/reducers';
+import { getProjectID } from '../../../utils/getSearchParams';
 import {
   sortAlphaAsc,
   sortAlphaDesc,
   sortNumAsc,
   sortNumDesc,
 } from '../../../utils/sort';
-import useStyles, { StyledTableCell, useOutlinedInputStyles } from './styles';
+import useStyles from './styles';
 import TableData from './TableData';
 
 interface FilterOption {
   search: string;
   cluster: string;
+  suspended: string;
 }
 interface PaginationData {
   pageNo: number;
@@ -53,33 +60,70 @@ interface SortData {
   name: { sort: boolean; ascending: boolean };
 }
 
-const BrowseSchedule = () => {
+const BrowseSchedule: React.FC = () => {
   const classes = useStyles();
-  const selectedProjectID = useSelector(
-    (state: RootState) => state.userData.selectedProjectID
-  );
+  const projectID = getProjectID();
+  const { t } = useTranslation();
 
   // Apollo query to get the scheduled data
   const { data, loading, error } = useQuery<Schedules, ScheduleDataVars>(
     SCHEDULE_DETAILS,
     {
-      variables: { projectID: selectedProjectID },
+      variables: { projectID },
       fetchPolicy: 'cache-and-network',
     }
   );
 
   // Apollo mutation to delete the selected schedule
   const [deleteSchedule] = useMutation<DeleteSchedule>(DELETE_SCHEDULE, {
-    refetchQueries: [
-      { query: SCHEDULE_DETAILS, variables: { projectID: selectedProjectID } },
-    ],
+    refetchQueries: [{ query: SCHEDULE_DETAILS, variables: { projectID } }],
   });
 
   // State for search and filtering
   const [filter, setFilter] = React.useState<FilterOption>({
     search: '',
     cluster: 'All',
+    suspended: 'All',
   });
+
+  const [updateSchedule] = useMutation(UPDATE_SCHEDULE, {
+    refetchQueries: [{ query: SCHEDULE_DETAILS, variables: { projectID } }],
+  });
+
+  // Disable and re-enable a schedule
+  const handleToggleSchedule = (schedule: ScheduleWorkflow) => {
+    const yaml = YAML.parse(schedule.workflow_manifest);
+    if (yaml.spec.suspend === undefined || yaml.spec.suspend === false) {
+      yaml.spec.suspend = true;
+    } else {
+      yaml.spec.suspend = false;
+    }
+
+    const weightData: WeightMap[] = [];
+
+    schedule.weightages.forEach((weightEntry) => {
+      weightData.push({
+        experiment_name: weightEntry.experiment_name,
+        weightage: weightEntry.weightage,
+      });
+    });
+
+    updateSchedule({
+      variables: {
+        ChaosWorkFlowInput: {
+          workflow_id: schedule.workflow_id,
+          workflow_name: schedule.workflow_name,
+          workflow_description: schedule.workflow_description,
+          isCustomWorkflow: schedule.isCustomWorkflow,
+          cronSyntax: schedule.cronSyntax,
+          workflow_manifest: JSON.stringify(yaml, null, 2),
+          project_id: schedule.project_id,
+          cluster_id: schedule.cluster_id,
+          weightages: weightData,
+        },
+      },
+    });
+  };
 
   // State for pagination
   const [paginationData, setPaginationData] = useState<PaginationData>({
@@ -103,8 +147,6 @@ const BrowseSchedule = () => {
     return uniqueList;
   };
 
-  const outlinedInputClasses = useOutlinedInputStyles();
-
   const filteredData = data?.getScheduledWorkflows
     .filter((dataRow) =>
       dataRow.workflow_name.toLowerCase().includes(filter.search.toLowerCase())
@@ -115,6 +157,15 @@ const BrowseSchedule = () => {
         : dataRow.cluster_name
             .toLowerCase()
             .includes(filter.cluster.toLowerCase())
+    )
+    .filter((dataRow) =>
+      filter.suspended === 'All'
+        ? true
+        : filter.suspended === 'true'
+        ? YAML.parse(dataRow.workflow_manifest).spec.suspend === true
+        : filter.suspended === 'false'
+        ? YAML.parse(dataRow.workflow_manifest).spec.suspend === undefined
+        : false
     )
     .sort((a: ScheduleWorkflow, b: ScheduleWorkflow) => {
       // Sorting based on unique fields
@@ -141,7 +192,7 @@ const BrowseSchedule = () => {
     });
   };
   return (
-    <div>
+    <div data-cy="workflowSchedulesTable">
       <section className="Heading section">
         <div className={classes.headerSection}>
           {/* Search Field */}
@@ -153,20 +204,50 @@ const BrowseSchedule = () => {
             onChange={(event) =>
               setFilter({ ...filter, search: event.target.value as string })
             }
-            classes={{
-              input: classes.input,
-            }}
             startAdornment={
               <InputAdornment position="start">
                 <SearchIcon />
               </InputAdornment>
             }
           />
+
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            focused
+          >
+            <InputLabel className={classes.selectText}>Name</InputLabel>
+            <Select
+              value={filter.suspended}
+              onChange={(event) =>
+                setFilter({
+                  ...filter,
+                  suspended: event.target.value as string,
+                })
+              }
+              label="Name"
+              className={classes.selectText}
+            >
+              <MenuItem value="All">
+                {t('chaosWorkflows.browseSchedules.options.all')}
+              </MenuItem>
+              <MenuItem value="false">
+                {t('chaosWorkflows.browseSchedules.options.enabledOnly')}
+              </MenuItem>
+              <MenuItem value="true">
+                {t('chaosWorkflows.browseSchedules.options.disabledOnly')}
+              </MenuItem>
+            </Select>
+          </FormControl>
+
           {/* Select Cluster */}
-          <FormControl variant="outlined" className={classes.formControl}>
-            <InputLabel className={classes.selectText}>
-              Target Cluster
-            </InputLabel>
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            color="primary"
+            focused
+          >
+            <InputLabel className={classes.selectText}>Target Agent</InputLabel>
             <Select
               value={filter.cluster}
               onChange={(event) =>
@@ -174,10 +255,9 @@ const BrowseSchedule = () => {
               }
               label="Target Cluster"
               className={classes.selectText}
-              input={<OutlinedInput classes={outlinedInputClasses} />}
             >
               <MenuItem value="All">All</MenuItem>
-              {(data ? getClusters(data?.getScheduledWorkflows) : []).map(
+              {(data ? getClusters(data.getScheduledWorkflows) : []).map(
                 (cluster: any) => (
                   <MenuItem value={cluster}>{cluster}</MenuItem>
                 )
@@ -196,10 +276,10 @@ const BrowseSchedule = () => {
             <TableHead>
               <TableRow className={classes.tableHead}>
                 {/* WorkFlow Name */}
-                <StyledTableCell className={classes.workflowName}>
+                <TableCell className={classes.workflowName}>
                   <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Typography className={classes.scheduleName}>
-                      Schedule Name
+                    <Typography style={{ paddingLeft: 30, paddingTop: 12 }}>
+                      {t('chaosWorkflows.browseSchedules.name')}
                     </Typography>
                     <div className={classes.sortDiv}>
                       <IconButton
@@ -213,10 +293,7 @@ const BrowseSchedule = () => {
                           })
                         }
                       >
-                        <ExpandLessIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandLessIcon fontSize="inherit" />
                       </IconButton>
                       <IconButton
                         aria-label="sort name descending"
@@ -229,93 +306,55 @@ const BrowseSchedule = () => {
                           })
                         }
                       >
-                        <ExpandMoreIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandMoreIcon fontSize="inherit" />
                       </IconButton>
                     </div>
                   </div>
-                </StyledTableCell>
-
-                {/* Starting Date */}
-                <StyledTableCell className={classes.headerStatus}>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Typography className={classes.startDate}>
-                      Starting Date
-                    </Typography>
-                    <div className={classes.sortDiv}>
-                      <IconButton
-                        aria-label="sort last run ascending"
-                        size="small"
-                        onClick={() =>
-                          setSortData({
-                            ...sortData,
-                            startDate: { sort: true, ascending: true },
-                            name: { sort: false, ascending: true },
-                          })
-                        }
-                      >
-                        <ExpandLessIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
-                      </IconButton>
-                      <IconButton
-                        aria-label="sort last run descending"
-                        size="small"
-                        onClick={() =>
-                          setSortData({
-                            ...sortData,
-                            startDate: { sort: true, ascending: false },
-                            name: { sort: false, ascending: true },
-                          })
-                        }
-                      >
-                        <ExpandMoreIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
-                      </IconButton>
-                    </div>
-                  </div>
-                </StyledTableCell>
-
-                {/* Regularity */}
-                <StyledTableCell>
-                  <Typography className={classes.regularity}>
-                    Regularity
-                  </Typography>
-                </StyledTableCell>
+                </TableCell>
 
                 {/* Cluster */}
-                <StyledTableCell>
+                <TableCell>
                   <Typography className={classes.targetCluster}>
-                    Cluster
+                    {t('chaosWorkflows.browseSchedules.agent')}
                   </Typography>
-                </StyledTableCell>
+                </TableCell>
 
                 {/* Show Experiments */}
-                <StyledTableCell>
+                <TableCell>
                   <Typography className={classes.showExp}>
-                    Show Experiments
+                    {t('chaosWorkflows.browseSchedules.experiments')}
                   </Typography>
-                </StyledTableCell>
-                <StyledTableCell />
+                </TableCell>
+
+                {/* Show Schedule Details */}
+                <TableCell>
+                  <Typography className={classes.showExp}>
+                    {t('chaosWorkflows.browseSchedules.schedule')}
+                  </Typography>
+                </TableCell>
+
+                {/* Next Run */}
+                <TableCell>
+                  <Typography className={classes.showExp}>
+                    {t('chaosWorkflows.browseSchedules.nextRun')}
+                  </Typography>
+                </TableCell>
+
+                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <StyledTableCell colSpan={7}>
+                  <TableCell colSpan={7}>
                     <Loader />
-                  </StyledTableCell>
+                  </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <StyledTableCell data-cy="browseScheduleError" colSpan={7}>
+                  <TableCell data-cy="browseScheduleError" colSpan={7}>
                     <Typography align="center">Unable to fetch data</Typography>
-                  </StyledTableCell>
+                  </TableCell>
                 </TableRow>
               ) : filteredData && filteredData.length ? (
                 filteredData
@@ -326,17 +365,21 @@ const BrowseSchedule = () => {
                   )
                   .map((data: ScheduleWorkflow) => (
                     <TableRow
-                      data-cy="browseScheduleData"
+                      data-cy="workflowSchedulesTableRow"
                       key={data.workflow_id}
                     >
-                      <TableData data={data} deleteRow={deleteRow} />
+                      <TableData
+                        data={data}
+                        deleteRow={deleteRow}
+                        handleToggleSchedule={handleToggleSchedule}
+                      />
                     </TableRow>
                   ))
               ) : (
                 <TableRow>
-                  <StyledTableCell data-cy="browseScheduleNoData" colSpan={7}>
+                  <TableCell data-cy="browseScheduleNoData" colSpan={7}>
                     <Typography align="center">No records available</Typography>
-                  </StyledTableCell>
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -360,7 +403,6 @@ const BrowseSchedule = () => {
               rowsPerPage: parseInt(event.target.value, 10),
             });
           }}
-          className={classes.pagination}
         />
       </Paper>
     </div>

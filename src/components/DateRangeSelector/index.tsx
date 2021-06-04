@@ -1,11 +1,11 @@
 /* eslint-disable react/no-array-index-key */
 import { Popover } from '@material-ui/core';
-import React, { useState } from 'react';
+import { useTheme } from '@material-ui/core/styles';
 import { subDays } from 'date-fns';
+import React, { useState } from 'react';
+import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main css file
 import 'react-date-range/dist/theme/default.css'; // theme css file
-import { DateRangePicker } from 'react-date-range';
-import { useTheme } from '@material-ui/core/styles';
 import useStyles from './styles';
 
 interface RangeCallBackType {
@@ -17,6 +17,7 @@ interface DateRangeSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   callbackToSetRange: RangeCallBackType;
+  className?: string;
 }
 
 const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
@@ -24,6 +25,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   isOpen,
   onClose,
   callbackToSetRange,
+  className,
 }) => {
   const classes = useStyles();
   const { palette } = useTheme();
@@ -54,6 +56,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
         classes={{
           paper: classes.popoverDateRangeSelector,
         }}
+        className={className}
       >
         <div className={classes.dateRangeSelectorContainer}>
           <DateRangePicker
@@ -71,7 +74,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             direction="vertical"
             scroll={{ enabled: true }}
             editableDateInputs
-            rangeColors={[palette.secondary.dark]}
+            rangeColors={[palette.primary.main]}
             showMonthAndYearPickers
           />
         </div>

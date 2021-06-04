@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: theme.spacing(1),
     borderRadius: '0.0625rem',
     '&:hover': {
-      background: theme.palette.background.paper,
+      background: theme.palette.background.default,
     },
   },
   formControl: {

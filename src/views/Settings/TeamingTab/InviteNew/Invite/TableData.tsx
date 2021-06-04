@@ -9,8 +9,8 @@ import {
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { UserInvite } from '../../../../../models/userData';
-import userAvatar from '../../../../../utils/user';
+import { UserInvite } from '../../../../../models/graphql/invite';
+import { userInitials } from '../../../../../utils/userInitials';
 import useStyles from './styles';
 
 interface TableDataProps {
@@ -52,13 +52,7 @@ const TableData: React.FC<TableDataProps> = ({
               className={classes.avatarBackground}
               style={{ alignContent: 'right' }}
             >
-              {row.name !== null
-                ? row.name.split(' ')[1]
-                  ? userAvatar(row.name)
-                  : userAvatar(row.name)
-                : row.username.split(' ')[1]
-                ? userAvatar(row.username)
-                : userAvatar(row.username)}
+              {userInitials(row.username)}
             </Avatar>
             <div className={classes.detail}>
               <div> {row.username}</div>
@@ -89,7 +83,7 @@ const TableData: React.FC<TableDataProps> = ({
                 onClick={() => {
                   setRole('Editor');
                   setAnchorEl(null);
-                  sendInvite(row.uid, 'Editor');
+                  sendInvite(row.id, 'Editor');
                 }}
                 className={classes.menuOpt}
               >
@@ -121,7 +115,7 @@ const TableData: React.FC<TableDataProps> = ({
                 onClick={() => {
                   setRole('Viewer');
                   setAnchorEl(null);
-                  sendInvite(row.uid, 'Viewer');
+                  sendInvite(row.id, 'Viewer');
                 }}
                 className={classes.menuOpt}
               >

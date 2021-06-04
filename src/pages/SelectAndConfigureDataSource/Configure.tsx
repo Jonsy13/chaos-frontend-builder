@@ -1,9 +1,8 @@
 import { useMutation } from '@apollo/client';
 import { Typography } from '@material-ui/core';
-import { ButtonOutlined, Modal } from 'kubera-ui';
+import { ButtonFilled, ButtonOutlined, Modal } from 'litmus-ui';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import ButtonFilled from '../../components/Button/ButtonFilled';
 import Scaffold from '../../containers/layouts/Scaffold';
 import { CREATE_DATASOURCE, UPDATE_DATASOURCE } from '../../graphql/mutations';
 import { DataSourceDetails } from '../../models/dataSourceData';
@@ -14,8 +13,9 @@ import {
 import { history } from '../../redux/configureStore';
 import { RootState } from '../../redux/reducers';
 import { ReactComponent as CrossMarkIcon } from '../../svg/crossmark.svg';
+import { getProjectID, getProjectRole } from '../../utils/getSearchParams';
 import { isValidWebUrl, validateTimeInSeconds } from '../../utils/validate';
-import ConfigurePrometheus from '../../views/AnalyticsDashboard/DataSource/Forms/prometheus';
+import ConfigurePrometheus from '../../views/Analytics/DataSources/Forms/prometheus';
 import useStyles from './styles';
 
 interface DataSourceConfigurePageProps {
@@ -32,9 +32,8 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
   const selectedDataSourceName = useSelector(
     (state: RootState) => state.selectDataSource.selectedDataSourceName
   );
-  const projectID = useSelector(
-    (state: RootState) => state.userData.selectedProjectID
-  );
+  const projectID = getProjectID();
+  const projectRole = getProjectRole();
   const [open, setOpen] = React.useState(false);
   const [disabled, setDisabled] = React.useState(true);
   const [dataSourceVars, setDataSourceVars] = useState<DataSourceDetails>({
@@ -214,9 +213,9 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
           </div>
           <div className={classes.saveButton}>
             <ButtonFilled
-              isPrimary={false}
-              isDisabled={disabled}
-              handleClick={() => setMutate(true)}
+              variant="success"
+              disabled={disabled}
+              onClick={() => setMutate(true)}
             >
               <div>{'\u2713'} Save</div>
             </ButtonFilled>
@@ -226,7 +225,7 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        width="55%"
+        width="60%"
         modalActions={
           <ButtonOutlined
             className={classes.closeButton}
@@ -240,7 +239,7 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
           <Typography align="center">
             {success === true ? (
               <img
-                src="./icons/finish.svg"
+                src="/icons/finish.svg"
                 alt="success"
                 className={classes.icon}
               />
@@ -282,9 +281,13 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
 
           {success === true ? (
             <ButtonFilled
-              isPrimary={false}
-              isDisabled={false}
-              handleClick={() => history.push('/analytics')}
+              variant="success"
+              onClick={() => {
+                history.push({
+                  pathname: '/analytics',
+                  search: `?projectID=${projectID}&projectRole=${projectRole}`,
+                });
+              }}
             >
               <div>Back to Data Source</div>
             </ButtonFilled>
@@ -301,10 +304,13 @@ const DataSourceConfigurePage: React.FC<DataSourceConfigurePageProps> = ({
               </ButtonOutlined>
 
               <ButtonFilled
-                isPrimary={false}
-                isWarning
-                isDisabled={false}
-                handleClick={() => history.push('/analytics')}
+                variant="error"
+                onClick={() => {
+                  history.push({
+                    pathname: '/analytics',
+                    search: `?projectID=${projectID}&projectRole=${projectRole}`,
+                  });
+                }}
               >
                 <div>Back to Data Source</div>
               </ButtonFilled>

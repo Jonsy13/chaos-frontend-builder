@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: '1.125rem',
     marginBottom: theme.spacing(1.125),
     fontWeight: 'bold',
-    color: theme.palette.text.secondary,
+    color: theme.palette.common.black,
   },
   linkDiv: {
     display: 'flex',
@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   linkType: {
     fontSize: '0.875rem',
     marginBottom: theme.spacing(1.25),
-    color: theme.palette.primary.main,
+    color: theme.palette.primary.dark,
   },
   linkListBox: {
     display: 'flex',
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   staticType: {
     fontSize: '0.875rem',
     marginBottom: theme.spacing(1.25),
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.text.primary,
   },
   mainDiv: {
     padding: theme.spacing(3.75),
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   maintainerlinks: {
     fontSize: '0.875rem',
     marginBottom: theme.spacing(0.875),
-    color: theme.palette.primary.main,
+    color: theme.palette.primary.dark,
   },
 }));
 export default useStyles;

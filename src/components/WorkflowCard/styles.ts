@@ -4,7 +4,7 @@ const useStyles = makeStyles((theme) => ({
   // CustomWorkflow
 
   customCard: {
-    background: theme.palette.background.paper,
+    background: theme.palette.cards.background,
     height: '16rem',
     width: '11.875rem',
     borderRadius: 3,
@@ -33,8 +33,8 @@ const useStyles = makeStyles((theme) => ({
   // CardContent
 
   card: {
-    width: theme.spacing(23),
-    background: theme.palette.cards.background,
+    width: '11.8rem',
+    background: theme.palette.background.paper,
     borderRadius: 3,
     height: '16rem',
     overflow: 'hidden',
@@ -45,26 +45,26 @@ const useStyles = makeStyles((theme) => ({
     border: `1px solid ${theme.palette.border.main}`,
     boxSizing: 'border-box',
     '&:hover': {
-      border: `1px solid ${theme.palette.highlight}`,
-      boxShadow: `0px 0px 16px ${theme.palette.highlight}80`,
+      border: `1px solid ${theme.palette.primary.main}`,
+      boxShadow: `0px 4px 4px ${theme.palette.primary.light}`,
     },
   },
 
   cardFocused: {
-    border: `1px solid ${theme.palette.secondary.dark}`,
-    boxShadow: `0px 6px 6px ${theme.palette.highlight}80`,
+    border: `1px solid ${theme.palette.primary.main}`,
+    boxShadow: `0px 4px 4px ${theme.palette.primary.light}`,
   },
 
   cardSelected: {
     background: theme.palette.background.paper,
-    boxShadow: `0px 0px 16px ${theme.palette.highlight}80`,
+    boxShadow: `0px 4px 4px ${theme.palette.primary.light}`,
     borderRadius: 3,
     overflow: 'hidden',
     fontSize: '0.875rem',
     margin: '0 auto',
     textAlign: 'center',
     cursor: 'pointer',
-    border: `2px solid ${theme.palette.highlight}`,
+    border: `1px solid ${theme.palette.primary.main}`,
     boxSizing: 'border-box',
   },
 
@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   cardMedia: {
     width: '100%',
     height: '5rem',
-    backgroundColor: theme.palette.cards.background,
+    backgroundColor: theme.palette.background.paper,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -84,15 +84,15 @@ const useStyles = makeStyles((theme) => ({
 
   // CARD CONTENT
   cardContent: {
-    height: '16rem',
     color: theme.palette.text.primary,
+    height: '16rem',
   },
 
   title: {
     fontWeight: 500,
     fontSize: '1rem',
     lineHeight: '130%',
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.text.primary,
   },
 
   description: {
@@ -108,7 +108,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   provider: {
-    color: theme.palette.text.disabled,
+    color: theme.palette.text.primary,
     fontSize: '0.75rem',
     lineHeight: '170%',
     textAlign: 'center',
@@ -117,15 +117,13 @@ const useStyles = makeStyles((theme) => ({
 
   cardAnalytics: {
     display: 'flex',
-    justifyContent: 'flex-end',
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    marginLeft: theme.spacing(1.5),
-    marginRight: theme.spacing(1),
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    margin: theme.spacing(0.75),
   },
 
   totalRuns: {
-    color: theme.palette.highlight,
+    color: theme.palette.primary.light,
     fontSize: '0.875rem',
     fontWeight: 500,
     marginTop: theme.spacing(0.375),
@@ -133,7 +131,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   totalRunsSelected: {
-    color: theme.palette.secondary.dark,
+    color: theme.palette.primary.main,
     fontSize: '0.875rem',
     fontWeight: 500,
     marginTop: theme.spacing(0.375),
@@ -141,7 +139,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   expCount: {
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.primary.light,
     color: theme.palette.secondary.contrastText,
     borderRadius: 3,
     paddingTop: theme.spacing(0.375),
@@ -154,11 +152,11 @@ const useStyles = makeStyles((theme) => ({
   },
 
   expCountSelected: {
-    backgroundColor: theme.palette.highlight,
+    backgroundColor: theme.palette.primary.main,
     color: theme.palette.secondary.contrastText,
     borderRadius: 3,
-    paddingTop: theme.spacing(0.375),
-    paddingBottom: theme.spacing(0.375),
+    paddingTop: theme.spacing(0.275),
+    paddingBottom: theme.spacing(0.275),
     paddingLeft: theme.spacing(0.75),
     paddingRight: theme.spacing(0.75),
     fontSize: '0.625rem',
@@ -172,7 +170,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   moreDetails: {
-    color: theme.palette.primary.dark,
+    color: theme.palette.primary.main,
   },
 
   horizontalLine: {
@@ -184,6 +182,19 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 500,
     fontSize: '0.75rem',
     lineHeight: '130%',
+  },
+  infrachaos: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing(0.275, 0.75, 0.275, 0.75),
+    backgroundColor: theme.palette.warning.main,
+    color: theme.palette.secondary.contrastText,
+    borderRadius: 3,
+  },
+  infraChaosMain: {
+    fontSize: '0.625rem',
+    fontWeight: 500,
   },
 }));
 

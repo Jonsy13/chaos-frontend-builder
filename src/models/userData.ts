@@ -1,27 +1,14 @@
-export interface JWTData {
-  username: string;
-  email: string;
-  name: string;
-  uid: string;
+export interface UpdateUser {
+  selectedProjectID: string;
+  selectedProjectName: string;
+  selectedProjectOwner: string;
+  userRole: string;
+  loader: boolean;
 }
-
 export interface CurrentUserData {
-  _id: string;
+  role: string;
   uid: string;
   username: string;
   email: string;
   name: string;
-  logged_in: boolean;
-  created_at: string;
-  updated_at: string;
-  removed_at: string;
-  state: string;
-  Kind: string;
-}
-
-export interface UserInvite {
-  uid: string;
-  name: string;
-  username: string;
-  email: string;
 }

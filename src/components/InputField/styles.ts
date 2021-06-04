@@ -10,13 +10,13 @@ const useStylesLitmus = makeStyles((theme: Theme) =>
       overflow: 'hidden',
       borderRadius: 4,
       color: 'inherit',
-      backgroundColor: theme.palette.background.paper,
+      backgroundColor: theme.palette.common.white,
       transition: theme.transitions.create(['border-color', 'box-shadow']),
       '&$error': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.common.white,
       },
       '&:hover': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.common.white,
         borderColor: (props) =>
           props !== true ? theme.palette.secondary.dark : '',
         boxShadow: (props) =>
@@ -25,17 +25,11 @@ const useStylesLitmus = makeStyles((theme: Theme) =>
             : 'none',
       },
       '&$selected': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.common.white,
       },
       '&$focused': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.common.white,
         color: 'inherit',
-      },
-    },
-    input: {
-      '&:-webkit-autofill': {
-        WebkitTextFillColor: theme.palette.text.secondary,
-        WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
       },
     },
     focused: {
@@ -65,13 +59,13 @@ const useStylesLitmus = makeStyles((theme: Theme) =>
         boxShadow: '',
       },
       '&$focused': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.common.white,
         borderColor: theme.palette.error.main,
         color: theme.palette.error.main,
       },
     },
     disabled: {
-      backgroundColor: theme.palette.background.paper,
+      backgroundColor: theme.palette.disabledBackground,
     },
   })
 );

@@ -19,7 +19,7 @@ i18n
     fallbackLng: 'en',
     debug: true,
     backend: {
-      loadPath: `${process.env.PUBLIC_URL}/locales/{{lng}}/{{ns}}.yaml`,
+      loadPath: '/locales/{{lng}}/{{ns}}.yaml',
       parse(data) {
         return yaml.load(data);
       },

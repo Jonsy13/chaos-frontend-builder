@@ -4,6 +4,7 @@ import {
   Paper,
   Table,
   TableBody,
+  TableCell,
   TableContainer,
   TableHead,
   TablePagination,
@@ -14,76 +15,135 @@ import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { WORKFLOW_DETAILS, WORKFLOW_EVENTS } from '../../../graphql';
+import { useTranslation } from 'react-i18next';
 import {
-  ExecutionData,
+  GET_CLUSTER_NAMES,
+  WORKFLOW_DETAILS,
+  WORKFLOW_EVENTS,
+} from '../../../graphql';
+import { Clusters, ClusterVars } from '../../../models/graphql/clusterData';
+import {
+  Pagination,
+  SortInput,
   Workflow,
   WorkflowDataVars,
   WorkflowRun,
+  WorkflowRunFilterInput,
+  WorkflowStatus,
   WorkflowSubscription,
+  WorkflowSubscriptionInput,
 } from '../../../models/graphql/workflowData';
-import { RootState } from '../../../redux/reducers';
-import {
-  sortAlphaAsc,
-  sortAlphaDesc,
-  sortNumAsc,
-  sortNumDesc,
-} from '../../../utils/sort';
+import { getProjectID } from '../../../utils/getSearchParams';
 import HeaderSection from './HeaderSection';
-import useStyles, { StyledTableCell } from './styles';
+import useStyles from './styles';
 import TableData from './TableData';
 
-interface FilterOptions {
-  search: string;
-  status: string;
-  cluster: string;
-}
-
-interface PaginationData {
-  pageNo: number;
-  rowsPerPage: number;
-}
-
-interface SortData {
-  lastRun: { sort: boolean; ascending: boolean };
-  name: { sort: boolean; ascending: boolean };
-  noOfSteps: { sort: boolean; ascending: boolean };
-}
-
-interface DateData {
-  dateValue: string;
-  fromDate: string;
-  toDate: string;
-}
-
-const BrowseWorkflow = () => {
+const BrowseWorkflow: React.FC = () => {
   const classes = useStyles();
-  const selectedProjectID = useSelector(
-    (state: RootState) => state.userData.selectedProjectID
+  const projectID = getProjectID();
+  const { t } = useTranslation();
+
+  // State for pagination
+  const [paginationData, setPaginationData] = useState<Pagination>({
+    page: 0,
+    limit: 10,
+  });
+
+  // States for filters
+  const [filters, setFilters] = useState<WorkflowRunFilterInput>({
+    workflow_name: '',
+    cluster_name: 'All',
+    workflow_status: 'All',
+    date_range: {
+      start_date: new Date(0).valueOf().toString(),
+    },
+  });
+
+  // State for date to be displayed
+  const [displayDate, setDisplayDate] = React.useState<string>(
+    t('chaosWorkflows.browseWorkflows.dateFilterHelperText')
+  );
+
+  // State for sorting
+  const [sortData, setSortData] = useState<SortInput>({
+    field: 'Time',
+    descending: true,
+  });
+
+  // Checks if the workflow event from subscription exists in the table
+  function isFiltered(newWorkflow: WorkflowRun) {
+    const nameExists =
+      filters.workflow_name &&
+      newWorkflow.workflow_name
+        .toLowerCase()
+        .includes(filters.workflow_name.toLowerCase());
+
+    const clusterExists =
+      filters.cluster_name === 'All' ||
+      filters.cluster_name === newWorkflow.cluster_name;
+
+    const phaseExists =
+      filters.workflow_status === 'All' ||
+      filters.workflow_status === newWorkflow.phase;
+
+    const dateExists =
+      filters.date_range &&
+      newWorkflow.last_updated >= filters.date_range.start_date &&
+      (filters.date_range.end_date
+        ? newWorkflow.last_updated < filters.date_range.end_date
+        : true);
+
+    const shouldAddNewWorkflow =
+      nameExists && clusterExists && phaseExists && dateExists;
+
+    return shouldAddNewWorkflow;
+  }
+
+  // Query to get list of Clusters
+  const { data: clusterList } = useQuery<Partial<Clusters>, ClusterVars>(
+    GET_CLUSTER_NAMES,
+    {
+      variables: {
+        project_id: projectID,
+      },
+    }
   );
 
   // Query to get workflows
   const { subscribeToMore, data, error } = useQuery<Workflow, WorkflowDataVars>(
     WORKFLOW_DETAILS,
     {
-      variables: { projectID: selectedProjectID },
+      variables: {
+        workflowRunsInput: {
+          project_id: projectID,
+          pagination: {
+            page: paginationData.page,
+            limit: paginationData.limit,
+          },
+          sort: sortData,
+          filter: filters,
+        },
+      },
       fetchPolicy: 'cache-and-network',
     }
   );
 
   // Using subscription to get realtime data
   useEffect(() => {
-    subscribeToMore<WorkflowSubscription>({
+    subscribeToMore<WorkflowSubscription, WorkflowSubscriptionInput>({
       document: WORKFLOW_EVENTS,
-      variables: { projectID: selectedProjectID },
+      variables: { projectID },
       updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
-        const modifiedWorkflows = prev.getWorkFlowRuns.slice();
+        if (!subscriptionData.data || !prev || !prev.getWorkflowRuns)
+          return prev;
+
+        const modifiedWorkflows = prev.getWorkflowRuns.workflow_runs.slice();
         const newWorkflow = subscriptionData.data.workflowEventListener;
 
         // Updating the query data
         let i = 0;
+        let totalNoOfWorkflows = prev.getWorkflowRuns.total_no_of_workflow_runs;
+
         for (; i < modifiedWorkflows.length; i++) {
           if (
             modifiedWorkflows[i].workflow_run_id === newWorkflow.workflow_run_id
@@ -92,33 +152,20 @@ const BrowseWorkflow = () => {
             break;
           }
         }
-        if (i === modifiedWorkflows.length)
+        if (i === modifiedWorkflows.length && isFiltered(newWorkflow)) {
+          totalNoOfWorkflows++;
           modifiedWorkflows.unshift(newWorkflow);
+        }
 
-        return { ...prev, getWorkFlowRuns: modifiedWorkflows };
+        return {
+          getWorkflowRuns: {
+            total_no_of_workflow_runs: totalNoOfWorkflows,
+            workflow_runs: modifiedWorkflows,
+          },
+        };
       },
     });
   }, [data]);
-
-  // States for filters
-  const [filters, setFilters] = useState<FilterOptions>({
-    search: '',
-    status: 'All',
-    cluster: 'All',
-  });
-
-  // State for sorting
-  const [sortData, setSortData] = useState<SortData>({
-    lastRun: { sort: true, ascending: true },
-    name: { sort: false, ascending: true },
-    noOfSteps: { sort: false, ascending: false },
-  });
-
-  // State for pagination
-  const [paginationData, setPaginationData] = useState<PaginationData>({
-    pageNo: 0,
-    rowsPerPage: 5,
-  });
 
   const [popAnchorEl, setPopAnchorEl] = React.useState<null | HTMLElement>(
     null
@@ -136,96 +183,14 @@ const BrowseWorkflow = () => {
     setOpen(true);
   };
 
-  // State for start date and end date
-  const [dateRange, setDateRange] = React.useState<DateData>({
-    dateValue: 'Select a period',
-    fromDate: new Date(0).toString(),
-    toDate: new Date(new Date().setHours(23, 59, 59)).toString(),
-  });
+  const workflowRuns = data?.getWorkflowRuns.workflow_runs;
 
-  const getClusters = (searchingData: WorkflowRun[]) => {
-    const uniqueList: string[] = [];
-    searchingData.forEach((data) => {
-      if (!uniqueList.includes(data.cluster_name)) {
-        uniqueList.push(data.cluster_name);
-      }
-    });
-    return uniqueList;
-  };
-
-  const filteredData = data?.getWorkFlowRuns
-    .filter((dataRow) =>
-      dataRow.workflow_name.toLowerCase().includes(filters.search.toLowerCase())
-    )
-    .filter((dataRow) =>
-      filters.status === 'All'
-        ? true
-        : (JSON.parse(dataRow.execution_data) as ExecutionData).phase.includes(
-            filters.status
-          )
-    )
-    .filter((dataRow) =>
-      filters.cluster === 'All'
-        ? true
-        : dataRow.cluster_name
-            .toLowerCase()
-            .includes(filters.cluster.toLowerCase())
-    )
-    .filter((dataRow) => {
-      return dateRange.fromDate && dateRange.toDate === undefined
-        ? true
-        : parseInt(dataRow.last_updated, 10) * 1000 >=
-            new Date(moment(dateRange.fromDate).format()).getTime() &&
-            parseInt(dataRow.last_updated, 10) * 1000 <=
-              new Date(moment(dateRange.toDate).format()).getTime();
-    })
-    .sort((a: WorkflowRun, b: WorkflowRun) => {
-      // Sorting based on unique fields
-      if (sortData.name.sort) {
-        const x = a.workflow_name;
-        const y = b.workflow_name;
-
-        return sortData.name.ascending
-          ? sortAlphaAsc(x, y)
-          : sortAlphaDesc(x, y);
-      }
-
-      if (sortData.lastRun.sort) {
-        const x = parseInt(a.last_updated, 10);
-        const y = parseInt(b.last_updated, 10);
-
-        return sortData.lastRun.ascending
-          ? sortNumAsc(y, x)
-          : sortNumDesc(y, x);
-      }
-
-      return 0;
-    })
-    .sort((a: WorkflowRun, b: WorkflowRun) => {
-      // Sorting based on non-unique fields
-      if (sortData.noOfSteps.sort) {
-        const x = Object.keys(
-          (JSON.parse(a.execution_data) as ExecutionData).nodes
-        ).length;
-
-        const y = Object.keys(
-          (JSON.parse(b.execution_data) as ExecutionData).nodes
-        ).length;
-
-        return sortData.noOfSteps.ascending
-          ? sortNumAsc(x, y)
-          : sortNumDesc(x, y);
-      }
-
-      return 0;
-    });
-
-  // Functions passed as props in the headerSeaction
+  // Functions passed as props in the headerSection
   const changeSearch = (
     event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
-    setFilters({ ...filters, search: event.target.value as string });
-    setPaginationData({ ...paginationData, pageNo: 0 });
+    setFilters({ ...filters, workflow_name: event.target.value as string });
+    setPaginationData({ ...paginationData, page: 0 });
   };
 
   const changeStatus = (
@@ -234,8 +199,11 @@ const BrowseWorkflow = () => {
       value: unknown;
     }>
   ) => {
-    setFilters({ ...filters, status: event.target.value as string });
-    setPaginationData({ ...paginationData, pageNo: 0 });
+    setFilters({
+      ...filters,
+      workflow_status: event.target.value as WorkflowStatus,
+    });
+    setPaginationData({ ...paginationData, page: 0 });
   };
 
   const changeCluster = (
@@ -244,55 +212,55 @@ const BrowseWorkflow = () => {
       value: unknown;
     }>
   ) => {
-    setFilters({ ...filters, cluster: event.target.value as string });
-    setPaginationData({ ...paginationData, pageNo: 0 });
+    setFilters({ ...filters, cluster_name: event.target.value as string });
+    setPaginationData({ ...paginationData, page: 0 });
   };
 
   // Function to set the date range for filtering
-  const dateChange = (selectFromDate: string, selectToDate: string) => {
-    setDateRange({
-      dateValue: `${moment(selectFromDate)
-        .format('DD.MM.YYYY')
-        .toString()}-${moment(selectToDate).format('DD.MM.YYYY').toString()}`,
-      fromDate: new Date(new Date(selectFromDate).setHours(0, 0, 0)).toString(),
-      toDate: new Date(new Date(selectToDate).setHours(23, 59, 59)).toString(),
+  const dateChange = (selectStartDate: string, selectEndDate: string) => {
+    // Change filter value for date range
+    setFilters({
+      ...filters,
+      date_range: {
+        start_date: new Date(selectStartDate)
+          .setHours(0, 0, 0)
+          .valueOf()
+          .toString(),
+        end_date: new Date(selectEndDate)
+          .setHours(23, 59, 59)
+          .valueOf()
+          .toString(),
+      },
     });
-  };
-  // Function to validate execution_data JSON
-  const dataPerRow = (dataRow: WorkflowRun) => {
-    let exe_data;
-    try {
-      exe_data = JSON.parse(dataRow.execution_data);
-    } catch (error) {
-      console.error(error);
-      return <></>;
-    }
-    return (
-      <TableRow data-cy="browseWorkflowData" key={dataRow.workflow_run_id}>
-        <TableData data={dataRow} exeData={exe_data} />
-      </TableRow>
+
+    // Change the display value of date range
+    setDisplayDate(
+      `${moment(selectStartDate).format('DD.MM.YYYY').toString()}-${moment(
+        selectEndDate
+      )
+        .format('DD.MM.YYYY')
+        .toString()}`
     );
   };
 
   return (
-    <div>
+    <div data-cy="WorkflowRunsTable">
       <section className="Heading section">
         {/* Header Section */}
         <HeaderSection
-          searchValue={filters.search}
+          searchValue={filters.workflow_name}
           changeSearch={changeSearch}
-          statusValue={filters.status}
+          statusValue={filters.workflow_status}
           changeStatus={changeStatus}
-          clusterValue={filters.cluster}
+          clusterValue={filters.cluster_name}
           changeCluster={changeCluster}
           popOverClick={handlePopOverClick}
           popOverClose={handlePopOverClose}
           isOpen={isOpen}
-          data={data}
-          getClusters={getClusters}
+          clusterList={clusterList}
           popAnchorEl={popAnchorEl}
           isDateOpen={open}
-          displayDate={dateRange.dateValue}
+          displayDate={displayDate}
           selectDate={dateChange}
         />
       </section>
@@ -305,17 +273,15 @@ const BrowseWorkflow = () => {
             <TableHead className={classes.tableHead}>
               <TableRow>
                 {/* Status */}
-                <StyledTableCell>
-                  <Typography className={classes.headerStatus}>
-                    Status
-                  </Typography>
-                </StyledTableCell>
+                <TableCell className={classes.headerStatus}>
+                  {t('chaosWorkflows.browseWorkflows.status')}
+                </TableCell>
 
                 {/* Workflow Name */}
-                <StyledTableCell className={classes.workflowName}>
+                <TableCell className={classes.workflowName}>
                   <div style={{ display: 'flex', flexDirection: 'row' }}>
                     <Typography className={classes.paddedTypography}>
-                      Workflow Name
+                      {t('chaosWorkflows.browseWorkflows.name')}
                     </Typography>
                     <div className={classes.sortDiv}>
                       <IconButton
@@ -323,97 +289,54 @@ const BrowseWorkflow = () => {
                         size="small"
                         onClick={() =>
                           setSortData({
-                            ...sortData,
-                            name: { sort: true, ascending: true },
-                            lastRun: { sort: false, ascending: true },
+                            field: 'Name',
                           })
                         }
                       >
-                        <ExpandLessIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandLessIcon fontSize="inherit" />
                       </IconButton>
                       <IconButton
                         aria-label="sort name descending"
                         size="small"
                         onClick={() =>
                           setSortData({
-                            ...sortData,
-                            name: { sort: true, ascending: false },
-                            lastRun: { sort: false, ascending: false },
+                            field: 'Name',
+                            descending: true,
                           })
                         }
                       >
-                        <ExpandMoreIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandMoreIcon fontSize="inherit" />
                       </IconButton>
                     </div>
                   </div>
-                </StyledTableCell>
+                </TableCell>
 
-                {/* Target Cluster */}
-                <StyledTableCell>
+                {/* Target Agent */}
+                <TableCell>
                   <Typography className={classes.targetCluster}>
-                    Target Cluster
+                    {t('chaosWorkflows.browseWorkflows.targetAgent')}
                   </Typography>
-                </StyledTableCell>
+                </TableCell>
 
-                {/* Reliability */}
-                <StyledTableCell>
-                  <Typography className={classes.headData}>
-                    Reliability Details
+                {/* Reliability Details */}
+                <TableCell>
+                  <Typography className={classes.paddedTypography}>
+                    {t('chaosWorkflows.browseWorkflows.reliabilityDetails')}
                   </Typography>
-                </StyledTableCell>
+                </TableCell>
 
-                {/* No of Experiments */}
-                <StyledTableCell>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Typography className={classes.paddedTypography}>
-                      # of Steps
-                    </Typography>
-                    <div className={classes.sortDiv}>
-                      <IconButton
-                        aria-label="sort no of steps ascending"
-                        size="small"
-                        onClick={() =>
-                          setSortData({
-                            ...sortData,
-                            noOfSteps: { sort: true, ascending: true },
-                          })
-                        }
-                      >
-                        <ExpandLessIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
-                      </IconButton>
-                      <IconButton
-                        aria-label="sort no of steps descending"
-                        size="small"
-                        onClick={() =>
-                          setSortData({
-                            ...sortData,
-                            noOfSteps: { sort: true, ascending: false },
-                          })
-                        }
-                      >
-                        <ExpandMoreIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
-                      </IconButton>
-                    </div>
-                  </div>
-                </StyledTableCell>
+                {/* Experiments */}
+                <TableCell>
+                  <Typography className={classes.paddedTypography}>
+                    {t('chaosWorkflows.browseWorkflows.experiments')}
+                  </Typography>
+                </TableCell>
 
                 {/* Last Run */}
-                <StyledTableCell>
+                <TableCell>
                   <div style={{ display: 'flex', flexDirection: 'row' }}>
                     <Typography className={classes.paddedTypography}>
-                      Last Run
+                      {t('chaosWorkflows.browseWorkflows.lastRun')}
                     </Typography>
                     <div className={classes.sortDiv}>
                       <IconButton
@@ -421,39 +344,30 @@ const BrowseWorkflow = () => {
                         size="small"
                         onClick={() =>
                           setSortData({
-                            ...sortData,
-                            lastRun: { sort: true, ascending: true },
-                            name: { sort: false, ascending: true },
+                            field: 'Time',
+                            descending: true,
                           })
                         }
                       >
-                        <ExpandLessIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandLessIcon fontSize="inherit" />
                       </IconButton>
                       <IconButton
                         aria-label="sort last run descending"
                         size="small"
                         onClick={() =>
                           setSortData({
-                            ...sortData,
-                            lastRun: { sort: true, ascending: false },
-                            name: { sort: false, ascending: true },
+                            field: 'Time',
                           })
                         }
                       >
-                        <ExpandMoreIcon
-                          className={classes.headerIcon}
-                          fontSize="inherit"
-                        />
+                        <ExpandMoreIcon fontSize="inherit" />
                       </IconButton>
                     </div>
                   </div>
-                </StyledTableCell>
+                </TableCell>
 
                 {/* Menu Cell */}
-                <StyledTableCell />
+                <TableCell />
               </TableRow>
             </TableHead>
 
@@ -461,27 +375,28 @@ const BrowseWorkflow = () => {
             <TableBody>
               {error ? (
                 <TableRow>
-                  <StyledTableCell colSpan={7}>
+                  <TableCell colSpan={7}>
                     <Typography data-cy="browseWorkflowError" align="center">
                       Unable to fetch data
                     </Typography>
-                  </StyledTableCell>
+                  </TableCell>
                 </TableRow>
-              ) : filteredData && filteredData.length ? (
-                filteredData
-                  .slice(
-                    paginationData.pageNo * paginationData.rowsPerPage,
-                    paginationData.pageNo * paginationData.rowsPerPage +
-                      paginationData.rowsPerPage
-                  )
-                  .map((dataRow) => dataPerRow(dataRow))
+              ) : workflowRuns && workflowRuns.length ? (
+                workflowRuns.map((dataRow) => (
+                  <TableRow
+                    data-cy="WorkflowRunsTableRow"
+                    key={dataRow.workflow_run_id}
+                  >
+                    <TableData data={dataRow} />
+                  </TableRow>
+                ))
               ) : (
                 <TableRow>
-                  <StyledTableCell colSpan={7}>
+                  <TableCell colSpan={7}>
                     <Typography data-cy="browseWorkflowNoData" align="center">
                       No records available
                     </Typography>
-                  </StyledTableCell>
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -490,22 +405,21 @@ const BrowseWorkflow = () => {
 
         {/* Pagination */}
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 25, 50]}
           component="div"
-          count={filteredData?.length ?? 0}
-          rowsPerPage={paginationData.rowsPerPage}
-          page={paginationData.pageNo}
+          count={data?.getWorkflowRuns.total_no_of_workflow_runs ?? 0}
+          rowsPerPage={paginationData.limit}
+          page={paginationData.page}
           onChangePage={(_, page) =>
-            setPaginationData({ ...paginationData, pageNo: page })
+            setPaginationData({ ...paginationData, page })
           }
           onChangeRowsPerPage={(event) =>
             setPaginationData({
               ...paginationData,
-              pageNo: 0,
-              rowsPerPage: parseInt(event.target.value, 10),
+              page: 0,
+              limit: parseInt(event.target.value, 10),
             })
           }
-          className={classes.pagination}
         />
       </Paper>
     </div>

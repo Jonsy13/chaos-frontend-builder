@@ -1,11 +1,10 @@
 import { useQuery } from '@apollo/client';
-import { Box, Paper, Tab, Tabs } from '@material-ui/core';
+import { Box, Paper, Tab, Tabs, useTheme } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
-import { GET_PROJECTS } from '../../../../graphql/queries';
+import { useTranslation } from 'react-i18next';
+import { LIST_PROJECTS } from '../../../../graphql';
 import { Member, Project, Projects } from '../../../../models/graphql/user';
-import { JWTData } from '../../../../models/userData';
-import getToken from '../../../../utils/getToken';
-import { getUserDetailsFromJwt } from '../../../../utils/user';
+import { getUserId } from '../../../../utils/auth';
 import AcceptedInvitations from './AcceptedInvitations';
 import ReceivedInvitations from './ReceivedInvitations';
 import useStyles from './styles';
@@ -46,21 +45,22 @@ function tabProps(index: any) {
 // NewUserModal displays a modal on creating a new user
 const Invitation: React.FC = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState(0);
-  const [activeColor, setActiveColor] = React.useState<string>('#28CB69');
   const handleChange = (event: React.ChangeEvent<{}>, actTab: number) => {
     setActiveTab(actTab);
-    setActiveColor('#28CB69');
   };
-  const userDetails: JWTData = getUserDetailsFromJwt(getToken());
+
+  const userID = getUserId();
 
   const [projectOtherCount, setProjectOtherCount] = useState<number>(0);
   const [invitationsCount, setInvitationCount] = useState<number>(0);
   const [projects, setProjects] = useState<Project[]>([]);
-  const { data: dataProject } = useQuery<Projects>(GET_PROJECTS, {
+  const { data: dataProject } = useQuery<Projects>(LIST_PROJECTS, {
     onCompleted: () => {
-      if (dataProject?.getProjects) {
-        setProjects(dataProject?.getProjects);
+      if (dataProject?.listProjects) {
+        setProjects(dataProject?.listProjects);
       }
     },
     fetchPolicy: 'cache-and-network',
@@ -70,13 +70,10 @@ const Invitation: React.FC = () => {
     let inviteCount = 0;
     projects.map((project) => {
       return project.members.forEach((member: Member) => {
-        if (
-          member.user_uid === userDetails.uid &&
-          member.invitation === 'Pending'
-        ) {
+        if (member.user_id === userID && member.invitation === 'Pending') {
           inviteCount++;
         } else if (
-          member.user_uid === userDetails.uid &&
+          member.user_id === userID &&
           member.role !== 'Owner' &&
           member.invitation === 'Accepted'
         ) {
@@ -95,34 +92,34 @@ const Invitation: React.FC = () => {
           onChange={handleChange}
           TabIndicatorProps={{
             style: {
-              backgroundColor: activeColor,
+              backgroundColor: theme.palette.primary.main,
             },
           }}
         >
           <Tab
-            data-cy="receivedTab"
+            data-cy="activeTab"
             label={
               <span
                 className={activeTab === 0 ? classes.active : classes.inActive}
               >
                 <span className={classes.invitationCount}>
-                  {invitationsCount}
+                  {projectOtherCount}
                 </span>{' '}
-                Invitations
+                {t('settings.teamingTab.active')}
               </span>
             }
             {...tabProps(0)}
           />
           <Tab
-            data-cy="sentTab"
+            data-cy="receivedTab"
             label={
               <span
                 className={activeTab === 1 ? classes.active : classes.inActive}
               >
                 <span className={classes.invitationCount}>
-                  {projectOtherCount}
+                  {invitationsCount}
                 </span>{' '}
-                Active
+                {t('settings.teamingTab.invitations')}
               </span>
             }
             {...tabProps(1)}
@@ -130,10 +127,10 @@ const Invitation: React.FC = () => {
         </Tabs>
       </Paper>
       <TabPanel value={activeTab} index={0}>
-        <ReceivedInvitations />
+        <AcceptedInvitations />
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
-        <AcceptedInvitations />
+        <ReceivedInvitations />
       </TabPanel>
     </div>
   );

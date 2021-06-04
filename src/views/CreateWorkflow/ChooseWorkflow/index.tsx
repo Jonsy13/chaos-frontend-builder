@@ -4,33 +4,80 @@ import {
   RadioGroup,
   Typography,
 } from '@material-ui/core';
-import { RadioButton } from 'kubera-ui';
+import { RadioButton } from 'litmus-ui';
 import localforage from 'localforage';
-import React, { useEffect, useState } from 'react';
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { ChooseWorkflowRadio } from '../../../models/localforage/radioButton';
+import useActions from '../../../redux/actions';
+import * as AlertActions from '../../../redux/actions/alert';
+import * as WorkflowActions from '../../../redux/actions/workflow';
+import { RootState } from '../../../redux/reducers';
 import ChoosePreDefinedExperiments from './choosePreDefinedExperiments';
+import ChooseWorkflowFromExisting from './ChooseWorkflowFromExisting';
+import SelectMyHub from './SelectMyHub';
 import useStyles from './styles';
+import UploadYAML from './uploadYAML';
 
-interface ChooseWorkflowRadio {
-  selected: string;
-  id: string;
+interface ChildRef {
+  onNext: () => void;
 }
 
-const ChooseWorkflow: React.FC = () => {
+const ChooseWorkflow = forwardRef((_, ref) => {
   const classes = useStyles();
   const { t } = useTranslation();
-
+  const alert = useActions(AlertActions);
   const [selected, setSelected] = useState<string>('');
-
+  const workflowDetails = useSelector(
+    (state: RootState) => state.workflowManifest.manifest
+  );
+  const workflowAction = useActions(WorkflowActions);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelected(event.target.value);
+    if (event.target.value === 'C' || event.target.value === 'D') {
+      workflowAction.setWorkflowManifest({
+        isCustomWorkflow: true,
+      });
+    } else {
+      workflowAction.setWorkflowManifest({
+        isCustomWorkflow: false,
+      });
+    }
   };
 
+  function onNext() {
+    if (selected === '') {
+      alert.changeAlertState(true); // No Workflow Type has been selected and user clicked on Next
+      return false;
+    }
+    if (selected === 'D' && workflowDetails === '') {
+      alert.changeAlertState(true);
+      return false;
+    }
+    alert.changeAlertState(false);
+    return true;
+  }
+
   useEffect(() => {
-    localforage
-      .getItem('selectedScheduleOption')
-      .then((value) => setSelected((value as ChooseWorkflowRadio).selected));
+    localforage.getItem('selectedScheduleOption').then((value) => {
+      if (value) {
+        setSelected((value as ChooseWorkflowRadio).selected);
+      } else setSelected('');
+    });
+    workflowAction.setWorkflowManifest({
+      manifest: '',
+    });
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    onNext,
+  }));
 
   return (
     <div className={classes.root}>
@@ -39,7 +86,7 @@ const ChooseWorkflow: React.FC = () => {
         <div aria-label="header" className={classes.header}>
           <div aria-label="headerLeft">
             <Typography className={classes.title}>
-              <strong> {t('createWorkflow.chooseWorkflow.title')}</strong>
+              {t('createWorkflow.chooseWorkflow.title')}
             </Typography>
             <Typography className={classes.subtitle}>
               {t('createWorkflow.chooseWorkflow.subtitle')}
@@ -53,33 +100,95 @@ const ChooseWorkflow: React.FC = () => {
         <div className={classes.m5} />
 
         <RadioGroup
-          aria-label="gender"
-          name="gender1"
+          data-testid="workflowRadioButtons"
+          data-cy="WorkflowsRadioGroup"
           value={selected}
           onChange={handleChange}
         >
           <Accordion expanded={selected === 'A'} className={classes.accordion}>
             <AccordionSummary>
-              <RadioButton value="A" onChange={(e) => handleChange(e)}>
-                Create a new workflow from one of the pre-defined chaos workflow
-                templates
+              <RadioButton
+                value="A"
+                data-cy="PredefinedWorkflowsRadioButton"
+                onChange={(e) => handleChange(e)}
+              >
+                <span data-testid="option">
+                  {t('createWorkflow.chooseWorkflow.optionA')}
+                </span>
               </RadioButton>
             </AccordionSummary>
             <ChoosePreDefinedExperiments />
           </Accordion>
-          <RadioButton value="B" onChange={(e) => handleChange(e)}>
-            Create a new workflow by cloning an existing workflow
-          </RadioButton>
-          <RadioButton value="C" onChange={(e) => handleChange(e)}>
-            Create a new workflow using the experiments from My Hubs
-          </RadioButton>
-          <RadioButton value="D" onChange={(e) => handleChange(e)}>
-            Import a workflow using YAML
-          </RadioButton>
+
+          <Accordion
+            expanded={selected === 'B'}
+            classes={{
+              root: classes.MuiAccordionroot,
+            }}
+            className={classes.accordion}
+          >
+            <AccordionSummary>
+              <RadioButton
+                value="B"
+                data-cy="templateWorkflowsRadioButton"
+                onChange={(e) => handleChange(e)}
+              >
+                <span data-testid="option">
+                  {t('createWorkflow.chooseWorkflow.optionB')}
+                </span>
+              </RadioButton>
+            </AccordionSummary>
+            <ChooseWorkflowFromExisting />
+          </Accordion>
+
+          <Accordion
+            expanded={selected === 'C'}
+            classes={{
+              root: classes.MuiAccordionroot,
+            }}
+            className={classes.accordion}
+          >
+            <AccordionSummary>
+              <RadioButton
+                value="C"
+                data-cy="myHubsRadioButton"
+                onChange={(e) => handleChange(e)}
+              >
+                <span data-testid="option">
+                  {t('createWorkflow.chooseWorkflow.optionC')}
+                </span>{' '}
+                <span className={classes.bold}>
+                  {t('createWorkflow.chooseWorkflow.myHubs')}
+                </span>
+              </RadioButton>
+            </AccordionSummary>
+            <SelectMyHub />
+          </Accordion>
+
+          <Accordion
+            expanded={selected === 'D'}
+            classes={{
+              root: classes.MuiAccordionroot,
+            }}
+            className={classes.accordion}
+          >
+            <AccordionSummary>
+              <RadioButton
+                value="D"
+                data-cy="uploadYAMLRadioButton"
+                onChange={(e) => handleChange(e)}
+              >
+                <span data-testid="option">
+                  {t('createWorkflow.chooseWorkflow.optionD')}
+                </span>
+              </RadioButton>
+            </AccordionSummary>
+            <UploadYAML />
+          </Accordion>
         </RadioGroup>
       </div>
     </div>
   );
-};
+});
 
 export default ChooseWorkflow;

@@ -1,29 +1,29 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Avatar, Paper, Typography } from '@material-ui/core';
-import { ButtonFilled, ButtonOutlined } from 'kubera-ui';
+import { ButtonFilled, ButtonOutlined } from 'litmus-ui';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import config from '../../../../../config';
 import {
   ACCEPT_INVITE,
+  ALL_USERS,
   DECLINE_INVITE,
-  GET_PROJECTS,
+  LIST_PROJECTS,
 } from '../../../../../graphql';
-import { MemberInvitation } from '../../../../../models/graphql/invite';
+import {
+  MemberInvitation,
+  UserInvite,
+} from '../../../../../models/graphql/invite';
 import { Projects } from '../../../../../models/graphql/user';
-import { CurrentUserData, JWTData } from '../../../../../models/userData';
-import getToken from '../../../../../utils/getToken';
-import userAvatar, {
-  getCoreToken,
-  getUserDetailsFromJwt,
-} from '../../../../../utils/user';
+import { getUserId } from '../../../../../utils/auth';
+import { userInitials } from '../../../../../utils/userInitials';
 import useStyles from './styles';
 
 interface ReceivedInvitation {
   projectName: string;
-  user_uid: string;
+  user_id: string;
   role: string;
   projectID: string;
+  user_name: string;
 }
 
 const ReceivedInvitations: React.FC = () => {
@@ -31,36 +31,35 @@ const ReceivedInvitations: React.FC = () => {
   const { t } = useTranslation();
   // for response data
   const [rows, setRows] = useState<ReceivedInvitation[]>([]);
-  const [allUsers, setAllUsers] = useState<CurrentUserData[]>([]);
+  const [allUsers, setAllUsers] = useState<UserInvite[]>([]);
   const [loading, setLoading] = useState(true);
+
   // stores the user whose invitation is accepted/declined
   const [acceptDecline, setAcceptDecline] = useState<string>('');
-  const userDetails: JWTData = getUserDetailsFromJwt(getToken());
 
+  const userID = getUserId();
   // mutation to accept the invitation
   const [acceptInvite] = useMutation<MemberInvitation>(ACCEPT_INVITE, {
     onCompleted: () => {
-      setRows(rows.filter((row) => row.user_uid !== acceptDecline));
+      setRows(rows.filter((row) => row.user_id !== acceptDecline));
     },
-    onError: () => {},
-    refetchQueries: [{ query: GET_PROJECTS }],
+    refetchQueries: [{ query: LIST_PROJECTS }],
   });
 
   // mutation to decline the invitation
   const [declineInvite] = useMutation<MemberInvitation>(DECLINE_INVITE, {
     onCompleted: () => {
-      setRows(rows.filter((row) => row.user_uid !== acceptDecline));
+      setRows(rows.filter((row) => row.user_id !== acceptDecline));
     },
-    onError: () => {},
-    refetchQueries: [{ query: GET_PROJECTS }],
+    refetchQueries: [{ query: LIST_PROJECTS }],
   });
 
-  const { data } = useQuery<Projects>(GET_PROJECTS, {
+  const { data } = useQuery<Projects>(LIST_PROJECTS, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-    const projectList = data?.getProjects ?? [];
+    const projectList = data?.listProjects ?? [];
     const users: ReceivedInvitation[] = [];
 
     let flag = 0;
@@ -68,22 +67,20 @@ const ReceivedInvitations: React.FC = () => {
 
     projectList.forEach((project) => {
       project.members.forEach((member) => {
-        if (
-          member.user_uid === userDetails.uid &&
-          member.invitation === 'Pending'
-        ) {
+        if (member.user_id === userID && member.invitation === 'Pending') {
           flag = 1;
           roleVar = member.role;
         }
       });
       if (flag === 1) {
         project.members.forEach((member) => {
-          if (member.user_uid !== userDetails.uid && member.role === 'Owner') {
+          if (member.user_id !== userID && member.role === 'Owner') {
             users.push({
               projectID: project.id,
               projectName: project.name,
               role: roleVar,
-              user_uid: member.user_uid,
+              user_id: member.user_id,
+              user_name: member.user_name,
             });
           }
         });
@@ -91,31 +88,22 @@ const ReceivedInvitations: React.FC = () => {
       }
     });
     setRows([...users]);
-    fetch(`${config.auth.url}/v1/user`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getCoreToken()}`,
-      },
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((res) => {
-        setAllUsers(res);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
   }, [data]);
+
+  useQuery(ALL_USERS, {
+    onCompleted: (data) => {
+      setAllUsers([...data.users]);
+      setLoading(false);
+    },
+  });
+
   return (
     <div data-cy="receivedInvitationModal">
       {!loading ? (
         <>
           {rows.length > 0 ? (
             rows.map((row) => (
-              <Paper className={classes.root}>
+              <Paper className={classes.root} key={`${row}`}>
                 <div className={classes.avatarDiv}>
                   <Avatar
                     data-cy="avatar"
@@ -123,18 +111,18 @@ const ReceivedInvitations: React.FC = () => {
                     className={classes.avatarBackground}
                     style={{ alignContent: 'right' }}
                   >
-                    {userAvatar(
+                    {userInitials(
                       allUsers.filter((data) => {
-                        return row.user_uid === data.uid;
-                      })[0].name
+                        return row.user_id === data.id;
+                      })[0].username
                     )}
                   </Avatar>
                   <div>
                     <Typography className={classes.name}>
                       {
                         allUsers.filter((data) => {
-                          return row.user_uid === data.uid;
-                        })[0].name
+                          return row.user_id === data.id;
+                        })[0].username
                       }
                     </Typography>
                     <Typography className={classes.email}>
@@ -150,7 +138,6 @@ const ReceivedInvitations: React.FC = () => {
                   </div>
                 </div>
                 <div className={classes.projectDiv}>
-                  <img src="./icons/chaos-icon.svg" alt="chaos" />
                   <Typography className={classes.projectName}>
                     {row.projectName}
                   </Typography>
@@ -159,12 +146,13 @@ const ReceivedInvitations: React.FC = () => {
                   <ButtonOutlined
                     className={classes.butnOutline}
                     onClick={() => {
-                      setAcceptDecline(row.user_uid);
+                      setAcceptDecline(row.user_id);
                       declineInvite({
                         variables: {
                           member: {
                             project_id: row.projectID,
-                            user_uid: userDetails.uid,
+                            user_id: getUserId(),
+                            role: row.role,
                           },
                         },
                       });
@@ -180,12 +168,13 @@ const ReceivedInvitations: React.FC = () => {
                   <div data-cy="receivedInvitationAccept">
                     <ButtonFilled
                       onClick={() => {
-                        setAcceptDecline(row.user_uid);
+                        setAcceptDecline(row.user_id);
                         acceptInvite({
                           variables: {
                             member: {
                               project_id: row.projectID,
-                              user_uid: userDetails.uid,
+                              user_id: getUserId(),
+                              role: row.role,
                             },
                           },
                         });

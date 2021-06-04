@@ -1,16 +1,16 @@
-import { makeStyles, Theme } from '@material-ui/core/styles';
+import { fade, makeStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     background: theme.palette.background.paper,
     color: theme.palette.text.primary,
-    padding: theme.spacing(4, 2),
+    padding: theme.spacing(0, 2),
     margin: '0 auto',
-    width: '88%',
+    width: '98%',
     height: '100%',
     flexDirection: 'column',
     [theme.breakpoints.up('lg')]: {
-      width: '87%',
+      width: '99%',
     },
   },
 
@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   title: {
+    fontWeight: 700,
     fontSize: '1.2rem',
     [theme.breakpoints.up('lg')]: {
       fontSize: '1.4rem',
@@ -64,12 +65,20 @@ const useStyles = makeStyles((theme: Theme) => ({
       marginLeft: '-1rem',
       border: 'none',
     },
+    '& .MuiAccordion-root:before': {
+      backgroundColor: 'transparent',
+    },
   },
 
   // Accordion Expanded Body [Content]
   predefinedWorkflowDiv: {
-    height: window.screen.height < 1080 ? '15rem' : '20rem',
+    height: '15rem',
     overflowY: 'scroll',
+  },
+  MuiAccordionroot: {
+    '&.MuiAccordion-root:before': {
+      backgroundColor: 'white',
+    },
   },
   predefinedWorkflowCard: {
     backgroundColor: theme.palette.cards.background,
@@ -94,6 +103,47 @@ const useStyles = makeStyles((theme: Theme) => ({
       display: 'flex',
     },
   },
+  existingWorkflowCard: {
+    alignItems: 'center',
+    backgroundColor: theme.palette.cards.background,
+    lineHeight: '5rem', // Making the div content vertically aligned
+    padding: theme.spacing(0, 5),
+    margin: theme.spacing(1, 0),
+
+    '& #body': {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+
+    '& #left-div': {
+      width: '15rem',
+      margin: theme.spacing(2),
+    },
+
+    '& #right-div': {
+      width: '30rem',
+      margin: theme.spacing(0, 4, 0, 4),
+    },
+    '& #last-div': {
+      width: '15rem',
+      margin: theme.spacing(0, 4, 0, 4),
+      position: 'relative',
+    },
+  },
+  lastDivChildren: {
+    width: '60%',
+    position: 'absolute',
+    display: 'flex',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    top: 14,
+  },
+  templateIconBg: {
+    height: 70,
+    marginLeft: theme.spacing(15),
+  },
   experimentIcon: {
     width: '3rem',
     height: '3rem',
@@ -111,6 +161,109 @@ const useStyles = makeStyles((theme: Theme) => ({
     opacity: '0.8',
     filter: 'blur(1rem)',
   },
+
+  // Upload button styles
+  uploadYAMLDiv: {
+    width: '95%',
+    padding: theme.spacing(3.75),
+    border: `1px dashed ${theme.palette.border.main}`,
+    margin: 'auto',
+    marginTop: theme.spacing(1),
+    borderRadius: theme.spacing(1.25),
+    backgroundColor: theme.palette.background.paper,
+  },
+  uploadYAMLText: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '31.25rem',
+    margin: 'auto',
+    paddingTop: theme.spacing(1),
+  },
+  uploadImage: {
+    marginBottom: theme.spacing(2.5),
+  },
+  orText: {
+    marginTop: theme.spacing(1.25),
+    marginBottom: theme.spacing(1.25),
+  },
+  uploadBtn: {
+    textTransform: 'none',
+    width: 'fit-content',
+    fontSize: '0.7rem',
+    height: '2.8125rem',
+    border: `2px solid ${theme.palette.primary.light}`,
+    borderRadius: theme.spacing(0.5),
+    '&:hover': {
+      backgroundColor: theme.palette.background.paper,
+      borderColor: (props) =>
+        props !== true ? theme.palette.primary.light : '',
+      boxShadow: (props) =>
+        props !== true
+          ? `${fade(theme.palette.primary.light, 0.5)} 0 0.3rem 0.4rem 0`
+          : 'none',
+    },
+  },
+  uploadSuccessDiv: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    maxWidth: '31.25rem',
+    margin: '0 auto',
+    paddingTop: theme.spacing(1.875),
+  },
+  uploadSuccessImg: {
+    width: '3.125rem',
+    height: '3.125rem',
+    verticalAlign: 'middle',
+    paddingBottom: theme.spacing(1),
+  },
+  uploadSuccessText: {
+    display: 'inline-block',
+    fontSize: '1rem',
+    marginBottom: theme.spacing(1.25),
+    marginLeft: theme.spacing(2.5),
+  },
+
+  // Select MyHub Option Styles
+  inputDiv: {
+    display: 'flex',
+    flexDirection: 'row',
+    margin: theme.spacing(2.5),
+    alignItems: 'center',
+  },
+  formControl: {
+    minWidth: '9rem',
+    marginLeft: theme.spacing(1),
+  },
+  label: {
+    color: theme.palette.common.black,
+  },
+  bold: {
+    fontWeight: 700,
+  },
+  noTemplatesDiv: {
+    margin: 'auto',
+    textAlign: 'center',
+  },
+  noTemplatesText: {
+    fontSize: '1.25rem',
+  },
+  noTemplatesDesc: {
+    fontSize: '1rem',
+  },
 }));
 
 export default useStyles;
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+
+export const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+    },
+  },
+};
