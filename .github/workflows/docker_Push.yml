@@ -20,5 +20,5 @@ jobs:
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
       - name: Build and Push the Docker Image
         run: |
-          BUILD_KIT=1 docker build -t jonsy13/chaosimage:latest .
+          DOCKER_BUILDKIT=1 docker build -t jonsy13/chaosimage:latest .
           docker push jonsy13/chaosimage:latest
