@@ -1,5 +1,4 @@
 import { Paper, Step, StepLabel, Stepper, Typography } from '@material-ui/core';
-import clsx from 'clsx';
 import { ButtonFilled, ButtonOutlined } from 'litmus-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +47,7 @@ const LitmusStepper: React.FC<LitmusStepperProps> = ({
             {activeStep === i ? (
               <StepLabel StepIconComponent={LitmusStepIcon}>
                 <Typography
-                  className={clsx(classes.label, classes.activeLabel)}
+                  className={`${classes.label} {classes.activeLabel}`}
                 >
                   {label}
                 </Typography>
@@ -56,7 +55,7 @@ const LitmusStepper: React.FC<LitmusStepperProps> = ({
             ) : activeStep < i ? (
               <StepLabel StepIconComponent={LitmusStepIcon}>
                 <Typography
-                  className={clsx(classes.label, classes.completedLabel)}
+                  className={`{classes.label} ${classes.completedLabel}`}
                 >
                   {label}
                 </Typography>

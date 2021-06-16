@@ -29,7 +29,7 @@ RUN npm ci
 COPY . ./
 
 # Finally runs the application
-RUN DISABLE_ESLINT_PLUGIN=true npm run build
+RUN DISABLE_ESLINT_PLUGIN=true npm run build --production
 
 # Stage 2: the production environment
 FROM nginxinc/nginx-unprivileged:1.18-alpine
