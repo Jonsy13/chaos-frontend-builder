@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import moment from 'moment';
-import Plotly from 'plotly.js';
+import Plotly from 'plotly.js-dist-min';
 import React, { useEffect } from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import { selectorOptions } from '../../../../utils/selectorOptions';
