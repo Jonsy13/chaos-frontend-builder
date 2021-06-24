@@ -40,6 +40,13 @@ const SelectMyHub = () => {
   useEffect(() => {
     if (data?.getHubStatus.length) {
       setAvailableHubs([...data.getHubStatus]);
+      data.getHubStatus.forEach((hubData) => {
+        if (hubData.HubName.toLowerCase() === 'chaos hub') {
+          setSelectedHub('Chaos Hub');
+          localforage.setItem('selectedHub', 'Chaos Hub');
+          localforage.setItem('hasSetWorkflowData', false);
+        }
+      });
     }
   }, [loading]);
 

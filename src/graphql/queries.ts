@@ -41,12 +41,12 @@ export const WORKFLOW_DETAILS = gql`
 `;
 
 export const WORKFLOW_STATS = gql`
-  query getScheduledWorkflowStats(
+  query getWorkflowStats(
     $filter: TimeFrequency!
-    $project_id: String!
+    $project_id: ID!
     $show_workflow_runs: Boolean!
   ) {
-    getScheduledWorkflowStats(
+    getWorkflowStats(
       filter: $filter
       project_id: $project_id
       show_workflow_runs: $show_workflow_runs
@@ -593,6 +593,57 @@ export const GET_IMAGE_REGISTRY = gql`
         image_registry_type
       }
       image_registry_id
+    }
+  }
+`;
+
+export const GET_GLOBAL_STATS = gql`
+  query getGlobalStats($query: UsageQuery!) {
+    UsageQuery(query: $query) {
+      TotalCount {
+        Workflows {
+          Runs
+          ExpRuns
+          Schedules
+        }
+        Agents {
+          Ns
+          Cluster
+          Total
+        }
+        Projects
+        Users
+      }
+    }
+  }
+`;
+
+export const GLOBAL_PROJECT_DATA = gql`
+  query getStats($query: UsageQuery!) {
+    UsageQuery(query: $query) {
+      TotalCount {
+        Projects
+      }
+      Projects {
+        Name
+        Workflows {
+          Schedules
+          ExpRuns
+          Runs
+        }
+        Agents {
+          Total
+          Ns
+          Cluster
+        }
+        Members {
+          Owner {
+            Name
+            Username
+          }
+          Total
+        }
+      }
     }
   }
 `;
