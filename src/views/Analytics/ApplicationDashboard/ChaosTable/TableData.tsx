@@ -2,9 +2,11 @@ import { Typography } from '@material-ui/core';
 import React from 'react';
 import { CheckBox } from '../../../../components/CheckBox';
 import { StyledTableCell } from '../../../../components/StyledTableCell';
+import TextPopOver from '../../../../components/TextPopOver';
 import { ChaosEventDetails } from '../../../../models/dashboardsData';
 import {
   CHAOS_EXPERIMENT_VERDICT_FAIL,
+  CHAOS_EXPERIMENT_VERDICT_FAILED_TO_INJECT,
   CHAOS_EXPERIMENT_VERDICT_PASS,
 } from '../../../../pages/ApplicationDashboard/constants';
 import useStyles from './styles';
@@ -25,54 +27,53 @@ const TableData: React.FC<TableDataProps> = ({
   return (
     <>
       <StyledTableCell padding="checkbox" className={classes.checkbox}>
-        <CheckBox
-          checked={itemSelectionStatus}
-          inputProps={{ 'aria-labelledby': labelIdentifier }}
-        />
+        {!data.injectionFailed && (
+          <CheckBox
+            checked={itemSelectionStatus}
+            inputProps={{ 'aria-labelledby': labelIdentifier }}
+          />
+        )}
       </StyledTableCell>
-      <StyledTableCell>
-        <div
-          className={classes.colorBar}
-          style={{
-            background: data.legend,
-          }}
-        />
-      </StyledTableCell>
-      <StyledTableCell>
-        <Typography
-          className={classes.tableObjects}
-          style={{ maxWidth: '25rem' }}
-        >
-          {data.workflow}
-        </Typography>
-      </StyledTableCell>
-      <StyledTableCell>
-        <Typography
-          className={classes.tableObjects}
-          style={{ maxWidth: '10rem' }}
-        >
-          {data.experiment}
-        </Typography>
-      </StyledTableCell>
-      <StyledTableCell>
-        <Typography
+      <StyledTableCell className={classes.flexObject}>
+        {!data.injectionFailed && (
+          <div
+            className={classes.colorCircle}
+            style={{ background: data.legendColor }}
+          />
+        )}
+        <TextPopOver
+          text={data.chaosResultName}
           className={classes.tableObjects}
           style={{ maxWidth: '15rem' }}
-        >
-          {data.target}
-        </Typography>
+        />
+      </StyledTableCell>
+      <StyledTableCell>
+        <TextPopOver
+          text={data.workflow}
+          className={classes.tableObjects}
+          style={{ maxWidth: '12.5rem' }}
+        />
+      </StyledTableCell>
+      <StyledTableCell>
+        <TextPopOver
+          text={data.engineContext}
+          className={classes.tableObjects}
+          style={{ maxWidth: '7.5rem' }}
+        />
       </StyledTableCell>
       <StyledTableCell>
         <Typography
           className={`${classes.tableObjects} ${
-            data.result === CHAOS_EXPERIMENT_VERDICT_PASS
+            data.verdict === CHAOS_EXPERIMENT_VERDICT_PASS
               ? classes.pass
-              : data.result === CHAOS_EXPERIMENT_VERDICT_FAIL
+              : data.verdict === CHAOS_EXPERIMENT_VERDICT_FAIL
               ? classes.fail
+              : data.verdict === CHAOS_EXPERIMENT_VERDICT_FAILED_TO_INJECT
+              ? classes.failedToInject
               : classes.awaited
           }`}
         >
-          {data.result}
+          {data.verdict}
         </Typography>
       </StyledTableCell>
     </>

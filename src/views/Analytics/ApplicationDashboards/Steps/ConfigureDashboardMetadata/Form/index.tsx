@@ -66,14 +66,69 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
   const selectedDashboard = useSelector(
     (state: RootState) => state.selectDashboard
   );
+  const [update, setUpdate] = useState(false);
+  const [availableApplicationMetadataMap, setAvailableApplicationMetadataMap] =
+    useState<ApplicationMetadata[]>([]);
+  const [kubeObjInput, setKubeObjInput] = useState<GVRRequest>({
+    group: '',
+    version: 'v1',
+    resource: 'pods',
+  });
+  const [selectedNamespaceList, setSelectedNamespaceList] = useState<
+    Array<Option>
+  >([]);
+  const [activeAgents, setActiveAgents] = useState<Cluster[]>([]);
 
   const getSelectedApps = (dashboardJSON: any) => {
     dashboard.selectDashboard({
       selectedDashboardID: '',
     });
-    return dashboardJSON.applicationMetadataMap;
+    const selectedApps: ApplicationMetadata[] = [];
+    dashboardJSON.applicationMetadataMap?.forEach(
+      (applicationMetadata: ApplicationMetadata) => {
+        const namespaceApps = availableApplicationMetadataMap.filter(
+          (appMeta) => appMeta.namespace === applicationMetadata.namespace
+        )[0];
+        applicationMetadata.applications.forEach((app) => {
+          const kindApps = namespaceApps.applications.filter(
+            (appKind) => appKind.kind === app.kind
+          )[0];
+          const availableApps = app.names.filter((name) =>
+            kindApps.names.includes(name)
+          );
+          if (availableApps.length) {
+            let nsIndex = -1;
+            selectedApps.forEach((existingApp, index) => {
+              if (existingApp.namespace === applicationMetadata.namespace) {
+                nsIndex = index;
+              }
+            });
+            if (nsIndex !== -1) {
+              selectedApps[nsIndex].applications.push({
+                kind: app.kind,
+                names: availableApps,
+              });
+            } else {
+              selectedApps.push({
+                namespace: applicationMetadata.namespace,
+                applications: [
+                  {
+                    kind: app.kind,
+                    names: availableApps,
+                  },
+                ],
+              });
+            }
+          }
+        });
+      }
+    );
+    return selectedApps;
   };
 
+  const [activeDataSources, setActiveDataSources] = useState<
+    ListDataSourceResponse[]
+  >([]);
   const [dashboardDetails, setDashboardDetails] = useState<DashboardDetails>({
     id: !configure ? '' : dashboardVars.id ?? '',
     name: !configure
@@ -114,26 +169,18 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
       : dashboardVars.information ?? '',
     panelGroupMap: dashboardVars.panelGroupMap ?? [],
     panelGroups: dashboardVars.panelGroups ?? [],
-    applicationMetadataMap: !configure
-      ? selectedDashboard.selectedDashboardID !== 'upload'
-        ? dashboardVars.applicationMetadataMap
-        : getSelectedApps(selectedDashboard.dashboardJSON)
-      : dashboardVars.applicationMetadataMap ?? [],
+    applicationMetadataMap:
+      !configure && selectedDashboard.selectedDashboardID === 'upload'
+        ? getSelectedApps(selectedDashboard.dashboardJSON)
+        : dashboardVars.applicationMetadataMap ?? [],
   });
-  const [update, setUpdate] = useState(false);
-  const [availableApplicationMetadataMap, setAvailableApplicationMetadataMap] =
-    useState<ApplicationMetadata[]>([]);
-  const [kubeObjInput, setKubeObjInput] = useState<GVRRequest>({
-    group: '',
-    version: 'v1',
-    resource: 'pods',
-  });
-  const [selectedNamespaceList, setSelectedNamespaceList] = useState<
-    Array<Option>
-  >([]);
 
   // Apollo query to get the agent data
-  const { data: agentList } = useQuery<Clusters, ClusterVars>(GET_CLUSTER, {
+  const {
+    data: agentList,
+    loading,
+    error,
+  } = useQuery<Clusters, ClusterVars>(GET_CLUSTER, {
     variables: { project_id: projectID },
     fetchPolicy: 'cache-and-network',
   });
@@ -242,16 +289,15 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
   }, [update]);
 
   useEffect(() => {
-    if (dashboardDetails.agentID === '' && !configure) {
-      const availableAgents = (agentList?.getCluster ?? []).filter(
-        (cluster) => {
-          return (
-            cluster.is_active &&
-            cluster.is_cluster_confirmed &&
-            cluster.is_registered
-          );
-        }
+    const availableAgents = (agentList?.getCluster ?? []).filter((cluster) => {
+      return (
+        cluster.is_active &&
+        cluster.is_cluster_confirmed &&
+        cluster.is_registered
       );
+    });
+    setActiveAgents(availableAgents);
+    if (dashboardDetails.agentID === '' && !configure) {
       setDashboardDetails({
         ...dashboardDetails,
         agentID: availableAgents.length ? availableAgents[0].cluster_id : '',
@@ -261,10 +307,11 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
   }, [agentList]);
 
   useEffect(() => {
+    const availableDataSources = dataSourceList.filter((dataSource) => {
+      return dataSource.health_status === 'Active';
+    });
+    setActiveDataSources(availableDataSources);
     if (dashboardDetails.dataSourceID === '' && !configure) {
-      const availableDataSources = dataSourceList.filter((dataSource) => {
-        return dataSource.health_status === 'Active';
-      });
       setDashboardDetails({
         ...dashboardDetails,
         dataSourceID: availableDataSources.length
@@ -278,28 +325,41 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
     }
   }, [dataSourceList]);
 
+  useEffect(() => {
+    if (!configure && selectedDashboard.selectedDashboardID === 'upload') {
+      setDashboardDetails({
+        ...dashboardDetails,
+        applicationMetadataMap: getSelectedApps(
+          selectedDashboard.dashboardJSON
+        ),
+      });
+    }
+  }, [availableApplicationMetadataMap]);
+
   const getAvailableApplications = () => {
     const availableApplications: Array<Option> = [];
     availableApplicationMetadataMap.forEach((appMetadata) => {
-      selectedNamespaceList.forEach((namespaceOption) => {
-        if (namespaceOption.name === appMetadata.namespace) {
-          const apps: Resource[] = appMetadata.applications.filter(
-            (application) => application.kind === kubeObjInput.resource
-          );
-          if (apps.length) {
-            apps[0].names.forEach((appName) => {
-              availableApplications.push({
-                name: `${
-                  namespaceOption.name
-                } / ${kubeObjInput.resource.substring(
-                  0,
-                  kubeObjInput.resource.length - 1
-                )} / ${appName}`,
+      if (selectedNamespaceList.length) {
+        selectedNamespaceList.forEach((namespaceOption) => {
+          if (namespaceOption.name === appMetadata.namespace) {
+            const apps: Resource[] = appMetadata.applications.filter(
+              (application) => application.kind === kubeObjInput.resource
+            );
+            if (apps.length) {
+              apps[0].names.forEach((appName) => {
+                availableApplications.push({
+                  name: `${
+                    namespaceOption.name
+                  } / ${kubeObjInput.resource.substring(
+                    0,
+                    kubeObjInput.resource.length - 1
+                  )} / ${appName}`,
+                });
               });
-            });
+            }
           }
-        }
-      });
+        });
+      }
     });
     return availableApplications;
   };
@@ -393,21 +453,48 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
               'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.agent'
             )}
             className={classes.selectText}
+            disabled={activeAgents.length === 0 || loading}
           >
-            {(agentList?.getCluster ?? [])
-              .filter((cluster) => {
-                return (
-                  cluster.is_active &&
-                  cluster.is_cluster_confirmed &&
-                  cluster.is_registered
-                );
-              })
-              .map((agent: Cluster) => (
-                <MenuItem key={agent.cluster_id} value={agent.cluster_id}>
-                  {agent.cluster_name}
-                </MenuItem>
-              ))}
+            {activeAgents.map((agent: Cluster) => (
+              <MenuItem key={agent.cluster_id} value={agent.cluster_id}>
+                {agent.cluster_name}
+              </MenuItem>
+            ))}
           </Select>
+          {!activeAgents.length && !loading ? (
+            <Typography className={classes.formErrorText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.noActiveAgent'
+              )}
+            </Typography>
+          ) : !(agentList?.getCluster ?? []).filter((cluster) => {
+              return (
+                cluster.cluster_id === dashboardDetails.agentID &&
+                cluster.is_active &&
+                cluster.is_cluster_confirmed &&
+                cluster.is_registered
+              );
+            }).length && agentList?.getCluster.length ? (
+            <Typography className={classes.formErrorText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.agentInactive'
+              )}
+            </Typography>
+          ) : loading ? (
+            <Typography className={classes.formHelperText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.fetchingAgents'
+              )}
+            </Typography>
+          ) : error ? (
+            <Typography className={classes.formErrorText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.errorFetchingAgents'
+              )}
+            </Typography>
+          ) : (
+            <></>
+          )}
         </FormControl>
       </div>
 
@@ -436,13 +523,34 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
               'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.dataSource'
             )}
             className={classes.selectText}
+            disabled={activeDataSources.length === 0}
           >
-            {dataSourceList.map((dataSource: ListDataSourceResponse) => (
+            {activeDataSources.map((dataSource: ListDataSourceResponse) => (
               <MenuItem key={dataSource.ds_id} value={dataSource.ds_id}>
                 {dataSource.ds_name}
               </MenuItem>
             ))}
           </Select>
+          {!activeDataSources.length ? (
+            <Typography className={classes.formErrorText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.noActiveDataSource'
+              )}
+            </Typography>
+          ) : !dataSourceList.filter((dataSource) => {
+              return (
+                dataSource.health_status === 'Active' &&
+                dataSource.ds_id === dashboardDetails.dataSourceID
+              );
+            }).length ? (
+            <Typography className={classes.formErrorText}>
+              {t(
+                'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.dataSourceInactive'
+              )}
+            </Typography>
+          ) : (
+            <></>
+          )}
         </FormControl>
 
         <InputField
@@ -472,12 +580,19 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
 
           <AutocompleteChipInput
             defaultValue={getSelectedAppNamespaces()}
-            onChange={(event, value, reason) => {
-              setSelectedNamespaceList(value as Array<Option>);
-            }}
-            options={availableApplicationMetadataMap.map((value) => {
-              return { name: value.namespace };
-            })}
+            onChange={(event, value) =>
+              setSelectedNamespaceList(value as Array<Option>)
+            }
+            getOptionSelected={(option) =>
+              selectedNamespaceList
+                .map((selections) => selections.name)
+                .includes(option.name)
+            }
+            options={
+              availableApplicationMetadataMap.map((value) => {
+                return { name: value.namespace };
+              }) ?? []
+            }
             label={t(
               'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.selectNamespaces'
             )}
@@ -526,7 +641,7 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
 
             <AutocompleteChipInput
               defaultValue={getSelectedAppDetails()}
-              onChange={(event, value, reason) => {
+              onChange={(event, value) => {
                 const newSelection: ApplicationMetadata[] = [];
                 const selectedApps: Array<Option> = value as Array<Option>;
                 selectedApps.forEach((nsKindApp) => {
@@ -575,6 +690,11 @@ const DashboardMetadataForm: React.FC<DashboardMetadataFormProps> = ({
                 });
                 setUpdate(true);
               }}
+              getOptionSelected={(option) =>
+                getSelectedAppDetails()
+                  .map((selections) => selections.name)
+                  .includes(option.name)
+              }
               options={getAvailableApplications()}
               label={t(
                 'analyticsDashboard.applicationDashboards.configureDashboardMetadata.form.selectApplications'

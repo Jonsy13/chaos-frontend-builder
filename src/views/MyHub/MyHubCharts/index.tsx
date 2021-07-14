@@ -1,27 +1,30 @@
 import { useQuery } from '@apollo/client';
 import { AppBar, Backdrop, Typography } from '@material-ui/core';
+import useTheme from '@material-ui/core/styles/useTheme';
 import Tabs from '@material-ui/core/Tabs';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-
-import useTheme from '@material-ui/core/styles/useTheme';
-import { StyledTab, TabPanel } from '../../../components/Tabs';
+import BackButton from '../../../components/Button/BackButton';
 import Loader from '../../../components/Loader';
+import { StyledTab, TabPanel } from '../../../components/Tabs';
 import Center from '../../../containers/layouts/Center';
-import Scaffold from '../../../containers/layouts/Scaffold';
+import Wrapper from '../../../containers/layouts/Wrapper';
 import {
   GET_CHARTS_DATA,
   GET_HUB_STATUS,
   GET_PREDEFINED_WORKFLOW_LIST,
 } from '../../../graphql';
 import { Chart, Charts, HubStatus } from '../../../models/redux/myhub';
+import useActions from '../../../redux/actions';
+import * as TabActions from '../../../redux/actions/tabs';
+import { RootState } from '../../../redux/reducers';
 import { getProjectID, getProjectRole } from '../../../utils/getSearchParams';
 import ChartCard from './chartCard';
 import HeaderSection from './headerSection';
 import useStyles from './styles';
-import BackButton from '../../../components/Button/BackButton';
 
 interface ChartName {
   ChaosName: string;
@@ -33,6 +36,12 @@ interface URLParams {
 }
 
 const MyHub: React.FC = () => {
+  // Redux states for tab
+  const workflowTabValue = useSelector(
+    (state: RootState) => state.tabNumber.myhub
+  );
+  const tabs = useActions(TabActions);
+
   // Get Parameters from URL
   const paramData: URLParams = useParams();
   const projectID = getProjectID();
@@ -42,7 +51,6 @@ const MyHub: React.FC = () => {
     fetchPolicy: 'cache-and-network',
   });
   const theme = useTheme();
-  const [tabValue, setTabValue] = useState(1);
 
   // Filter the selected MyHub
   const UserHub = hubDetails?.getHubStatus.filter((myHub) => {
@@ -99,7 +107,7 @@ const MyHub: React.FC = () => {
   };
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setTabValue(newValue);
+    tabs.changeHubTabs(newValue);
   };
 
   useEffect(() => {
@@ -141,7 +149,7 @@ const MyHub: React.FC = () => {
       </Center>
     </Backdrop>
   ) : (
-    <Scaffold>
+    <Wrapper>
       <BackButton />
       <div className={classes.header}>
         <Typography variant="h3" gutterBottom>
@@ -163,7 +171,7 @@ const MyHub: React.FC = () => {
       </div>
       <AppBar position="static" color="default" className={classes.appBar}>
         <Tabs
-          value={tabValue}
+          value={workflowTabValue}
           onChange={handleTabChange}
           TabIndicatorProps={{
             style: {
@@ -182,7 +190,7 @@ const MyHub: React.FC = () => {
           />
         </Tabs>
       </AppBar>
-      <TabPanel value={tabValue} index={0}>
+      <TabPanel value={workflowTabValue} index={0}>
         <div className={classes.mainDiv}>
           <HeaderSection
             searchValue={searchPredefined}
@@ -209,7 +217,7 @@ const MyHub: React.FC = () => {
             ) : (
               <>
                 <img
-                  src="/icons/no-experiment-found.svg"
+                  src="./icons/no-experiment-found.svg"
                   alt="no experiment"
                   className={classes.noExpImage}
                 />
@@ -221,7 +229,7 @@ const MyHub: React.FC = () => {
           </div>
         </div>
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={workflowTabValue} index={1}>
         <div className={classes.mainDiv}>
           <HeaderSection searchValue={search} changeSearch={changeSearch} />
           <div className={classes.chartsGroup}>
@@ -242,7 +250,7 @@ const MyHub: React.FC = () => {
             ) : (
               <>
                 <img
-                  src="/icons/no-experiment-found.svg"
+                  src="./icons/no-experiment-found.svg"
                   alt="no experiment"
                   className={classes.noExpImage}
                 />
@@ -254,7 +262,7 @@ const MyHub: React.FC = () => {
           </div>
         </div>
       </TabPanel>
-    </Scaffold>
+    </Wrapper>
   );
 };
 

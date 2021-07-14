@@ -4,11 +4,8 @@ const useStyles = makeStyles((theme) => ({
   accordionSummary: {
     display: 'flex',
     justifyItems: 'center',
-    background: theme.palette.disabledBackground,
-  },
-
-  accordionDetails: {
-    width: '100%',
+    background: theme.palette.cards.header,
+    borderRadius: '3px 3px 0 0',
   },
 
   button: {
@@ -35,7 +32,10 @@ const useStyles = makeStyles((theme) => ({
   },
 
   editIconButton: {
-    marginTop: theme.spacing(-0.75),
+    margin: theme.spacing(0.75, 0, 0, 1),
+    width: '1.75rem',
+    height: '1.75rem',
+    cursor: 'pointer !important',
   },
 }));
 

@@ -28,6 +28,8 @@ import {
   Workflow,
   WorkflowDataVars,
 } from '../../../models/graphql/workflowData';
+import useActions from '../../../redux/actions';
+import * as TabActions from '../../../redux/actions/tabs';
 import { history } from '../../../redux/configureStore';
 import { getProjectID, getProjectRole } from '../../../utils/getSearchParams';
 import { ApplicationDashboardCard } from './ApplicationDashboardCard';
@@ -39,7 +41,7 @@ const Overview: React.FC = () => {
   const projectID = getProjectID();
   const projectRole = getProjectRole();
   const { t } = useTranslation();
-
+  const tabs = useActions(TabActions);
   let dataSource = false;
   let workflowDashboardCount = 0;
   let applicationDashboardCount = 0;
@@ -154,6 +156,7 @@ const Overview: React.FC = () => {
           <TextButton
             variant="highlight"
             onClick={() => {
+              tabs.changeHubTabs(0);
               history.push({
                 pathname: '/myhub/Chaos%20Hub',
                 search: `?projectID=${projectID}&projectRole=${projectRole}`,
@@ -242,7 +245,7 @@ const Overview: React.FC = () => {
           src="./icons/dashboardCloud.svg"
           alt="Schedule a workflow"
           heading="Configure a chaos interleaved dashboard"
-          description="Data source(s) have been found to be connected in this project. Select “Add dashboard” to configure a chaos interleaved dashboard"
+          description="Data source(s) have been found to be connected in this project. Select “Create dashboard” to configure a chaos interleaved dashboard"
           button={
             <ButtonFilled
               onClick={() => {
@@ -252,14 +255,14 @@ const Overview: React.FC = () => {
                 });
               }}
             >
-              <Typography>Add dashboard</Typography>
+              <Typography>Create dashboard</Typography>
             </ButtonFilled>
           }
         />
       )}{' '}
       {workflowDashboardCount > 0 ? (
         <RecentOverviewContainer
-          heading="Recent Workflow Dashboards"
+          heading="Recently updated workflow dashboards"
           buttonLink="/create-workflow"
           buttonImgSrc="./icons/calendarBlank.svg"
           buttonImgAlt="Schedule workflow"
@@ -308,11 +311,11 @@ const Overview: React.FC = () => {
       )}
       {applicationDashboardCount > 0 && (
         <RecentOverviewContainer
-          heading="Recent Application Dashboards"
+          heading="Recently viewed application dashboards"
           buttonLink="/analytics/dashboard/create"
           buttonImgSrc="./icons/cloudWhite.svg"
-          buttonImgAlt="Add dashboard"
-          buttonText="Add dashbaord"
+          buttonImgAlt="Create dashboard"
+          buttonText="Create dashbaord"
         >
           {dashboardListLoading ? (
             <Center>

@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: `${theme.palette.cards.highlight} !important`,
     color: theme.palette.highlight,
     '& path': {
-      stroke: theme.palette.highlight,
+      fill: theme.palette.highlight,
     },
   },
   listIcon: {
@@ -36,10 +36,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   drawerList: {
     marginTop: theme.spacing(8.375),
-    '& #quickActions': {
-      width: '80%',
-      border: `1px solid ${theme.palette.border.main}`,
-    },
+  },
+  quickActions: {
+    width: '80%',
+    border: `1px solid ${theme.palette.border.main}`,
   },
   versionlogo: {
     width: '1.25rem',

@@ -1,4 +1,4 @@
-import { GraphMetric } from 'litmus-ui';
+import { BrushPostitionProps, GraphMetric } from 'litmus-ui';
 import {
   ApplicationMetadata,
   ListDashboardResponse,
@@ -10,6 +10,7 @@ import {
   PromQuery,
   updatePanelGroupInput,
 } from './graphql/dashboardsDetails';
+import { promQueryInput } from './graphql/prometheus';
 
 export interface PanelGroupMap {
   groupName: string;
@@ -84,6 +85,7 @@ export interface DashboardDetails {
 export interface DashboardConfigurationDetails {
   name: string;
   typeID: string;
+  typeName: string;
   dataSourceName: string;
   dataSourceURL: string;
   agentName: string;
@@ -94,48 +96,63 @@ export interface PanelNameAndID {
   id: string;
 }
 
+export interface QueryMapForPanel {
+  panelID: string;
+  metricDataForPanel: ParsedMetricPrometheusData;
+}
+
+export interface QueryMapForPanelGroup {
+  panelGroupID: string;
+  metricDataForGroup: QueryMapForPanel[];
+}
+
 export interface GraphPanelProps extends PanelResponse {
   className?: string;
-  controllerPanelID?: string;
+  metricDataForPanel?: ParsedMetricPrometheusData;
+  chaosData?: Array<GraphMetric>;
+  centralBrushPosition?: BrushPostitionProps;
+  handleCentralBrushPosition: (newBrushPosition: BrushPostitionProps) => void;
+  centralAllowGraphUpdate: boolean;
 }
 
 export interface GraphPanelGroupProps extends PanelGroupResponse {
   selectedPanels?: string[];
+  metricDataForGroup?: QueryMapForPanel[];
+  chaosData?: Array<GraphMetric>;
+  centralBrushPosition?: BrushPostitionProps;
+  handleCentralBrushPosition: (newBrushPosition: BrushPostitionProps) => void;
+  centralAllowGraphUpdate: boolean;
 }
 
-export interface ParsedPrometheusData {
+export interface ParsedMetricPrometheusData {
   seriesData: Array<GraphMetric>;
   closedAreaData: Array<GraphMetric>;
-  chaosData: Array<GraphMetric>;
-}
-export interface RunWiseChaosMetrics {
-  runIndex: number;
-  runID: string;
-  lastUpdatedTimeStamp: number;
-  probeSuccessPercentage: string;
-  experimentStatus: string;
-  experimentVerdict: string;
-  resilienceScore: string;
-  workflowStatus: string;
 }
 
-export interface WorkflowAndExperimentMetaDataMap {
-  workflowID: string;
-  workflowName: string;
-  experimentName: string;
-  targetApp: string;
-  targetNamespace: string;
-  runWiseChaosMetrics: RunWiseChaosMetrics[];
+export interface ParsedChaosEventPrometheusData {
+  chaosEventDetails: ChaosEventDetails[];
+  chaosData: Array<GraphMetric>;
 }
+
 export interface ChaosEventDetails {
   id: string;
-  legend: string;
+  legendColor: string;
+  chaosResultName: string;
   workflow: string;
-  experiment: string;
-  target: string;
-  result: string;
-  chaosMetrics: WorkflowAndExperimentMetaDataMap;
-  showOnTable: Boolean;
+  engineContext: string;
+  verdict: string;
+  injectionFailed: boolean;
+}
+
+export interface RangeType {
+  startDate: string;
+  endDate: string;
+}
+
+interface TimeControlObject {
+  range: RangeType;
+  relativeTime: number;
+  refreshInterval: number;
 }
 
 export interface SelectedDashboardInformation {
@@ -151,9 +168,18 @@ export interface SelectedDashboardInformation {
   chaosVerdictQueryTemplate: string;
   applicationMetadataMap: ApplicationMetadata[];
   dashboardListForAgent: ListDashboardResponse[];
-  metaData: ListDashboardResponse[];
+  metaData: ListDashboardResponse | undefined;
+  closedAreaQueryIDs: string[];
   dashboardKey: string;
   panelNameAndIDList: PanelNameAndID[];
+  dataSourceURL: string;
+  dataSourceID: string;
+  dataSourceName: string;
+  promQueries: promQueryInput[];
+  range: RangeType;
+  relativeTime: number;
+  refreshInterval: number;
+  timeControlStack: TimeControlObject[];
 }
 
 export interface PromQueryDetails extends PromQuery {

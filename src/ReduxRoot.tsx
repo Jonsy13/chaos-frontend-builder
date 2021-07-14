@@ -14,6 +14,8 @@ const client = createApolloClient(
   `${config.grahqlEndpointSubscription}/query`
 );
 
+console.error('From Redux-Root=>  ', config.grahqlEndpoint);
+
 const ReduxRoot = () => {
   return (
     <ApolloProvider client={client}>

@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-expressions */
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
+  Drawer,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -10,17 +12,25 @@ import {
   TableRow,
   Typography,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
+import { ButtonFilled, ButtonOutlined, TextButton } from 'litmus-ui';
 import moment from 'moment';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Loader from '../../../../components/Loader';
+import { DELETE_DATASOURCE } from '../../../../graphql';
 import { LIST_DATASOURCE } from '../../../../graphql/queries';
 import {
   DataSourceList,
+  DeleteDataSourceInput,
   ListDataSourceResponse,
   ListDataSourceVars,
 } from '../../../../models/graphql/dataSourceDetails';
-import { getProjectID } from '../../../../utils/getSearchParams';
+import { history } from '../../../../redux/configureStore';
+import {
+  getProjectID,
+  getProjectRole,
+} from '../../../../utils/getSearchParams';
 import {
   sortAlphaAsc,
   sortAlphaDesc,
@@ -40,36 +50,48 @@ interface RangeType {
 interface SortData {
   lastConfigured: { sort: boolean; ascending: boolean };
   name: { sort: boolean; ascending: boolean };
-  status: { sort: boolean; ascending: boolean };
-  dataSourceType: { sort: boolean; ascending: boolean };
 }
 
 interface Filter {
   range: RangeType;
-  selectedDataSourceType: string;
   sortData: SortData;
   selectedStatus: string;
   searchTokens: string[];
 }
 
+interface ForceDeleteVars {
+  connectedDashboards: string[];
+  dsID: string;
+  dsName: string;
+}
+
 const DataSourceTable: React.FC = () => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const projectID = getProjectID();
+  const projectRole = getProjectRole();
   const [filter, setFilter] = React.useState<Filter>({
     range: { startDate: 'all', endDate: 'all' },
-    selectedDataSourceType: 'All',
     sortData: {
       name: { sort: false, ascending: true },
       lastConfigured: { sort: true, ascending: false },
-      status: { sort: false, ascending: true },
-      dataSourceType: { sort: false, ascending: true },
     },
     selectedStatus: 'All',
     searchTokens: [''],
   });
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const projectID = getProjectID();
+  const [success, setSuccess] = React.useState(false);
+  const [isAlertOpen, setIsAlertOpen] = React.useState(false);
+  const [drawerState, setDrawerState] = React.useState(false);
+  const [showAllDashboards, setShowAllDashboards] = React.useState(false);
+  const [forceDeleteVars, setForceDeleteVars] = React.useState<ForceDeleteVars>(
+    {
+      connectedDashboards: [],
+      dsID: '',
+      dsName: '',
+    }
+  );
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -83,24 +105,41 @@ const DataSourceTable: React.FC = () => {
   };
 
   // Apollo query to get the data source data
-  const { data, loading, error } = useQuery<DataSourceList, ListDataSourceVars>(
-    LIST_DATASOURCE,
+  const { data, loading, error, refetch } = useQuery<
+    DataSourceList,
+    ListDataSourceVars
+  >(LIST_DATASOURCE, {
+    variables: { projectID },
+    fetchPolicy: 'cache-and-network',
+    pollInterval: 10000,
+  });
+
+  const cleanDrawerState = () => {
+    setForceDeleteVars({
+      connectedDashboards: [],
+      dsID: '',
+      dsName: '',
+    });
+    setShowAllDashboards(false);
+    setDrawerState(false);
+  };
+
+  const alertStateHandler = (successState: boolean) => {
+    setSuccess(successState);
+    setIsAlertOpen(true);
+    if (successState) {
+      cleanDrawerState();
+      refetch();
+    }
+  };
+
+  const [deleteDataSource] = useMutation<boolean, DeleteDataSourceInput>(
+    DELETE_DATASOURCE,
     {
-      variables: { projectID },
-      fetchPolicy: 'cache-and-network',
-      pollInterval: 10000,
+      onCompleted: () => alertStateHandler(true),
+      onError: () => alertStateHandler(false),
     }
   );
-
-  const getDataSourceType = (searchingData: ListDataSourceResponse[]) => {
-    const uniqueList: string[] = [];
-    searchingData.forEach((data) => {
-      if (!uniqueList.includes(data.ds_type)) {
-        uniqueList.push(data.ds_type);
-      }
-    });
-    return uniqueList;
-  };
 
   const getStatus = (searchingData: ListDataSourceResponse[]) => {
     const uniqueList: string[] = [];
@@ -116,20 +155,10 @@ const DataSourceTable: React.FC = () => {
     ? !data.ListDataSource
       ? []
       : data.ListDataSource.filter((ds: ListDataSourceResponse) => {
-          return filter.searchTokens.every(
-            (s: string) =>
-              ds.ds_name.toLowerCase().includes(s) ||
-              (ds.ds_type !== undefined &&
-                ds.ds_type.toLowerCase().includes(s)) ||
-              (ds.health_status !== undefined &&
-                ds.health_status.toLowerCase().includes(s))
+          return filter.searchTokens.every((s: string) =>
+            ds.ds_name.toLowerCase().includes(s)
           );
         })
-          .filter((data) => {
-            return filter.selectedDataSourceType === 'All'
-              ? true
-              : data.ds_type === filter.selectedDataSourceType;
-          })
           .filter((data) => {
             return filter.selectedStatus === 'All'
               ? true
@@ -164,23 +193,8 @@ const DataSourceTable: React.FC = () => {
               const x = parseInt(a.updated_at, 10);
               const y = parseInt(b.updated_at, 10);
               return filter.sortData.lastConfigured.ascending
-                ? sortNumAsc(y, x)
-                : sortNumDesc(y, x);
-            }
-            if (filter.sortData.status.sort) {
-              const x = a.health_status;
-              const y = b.health_status;
-              return filter.sortData.status.ascending
-                ? sortAlphaAsc(x, y)
-                : sortAlphaDesc(x, y);
-            }
-            if (filter.sortData.dataSourceType.sort) {
-              const x = a.ds_type;
-              const y = b.ds_type;
-
-              return filter.sortData.dataSourceType.ascending
-                ? sortAlphaAsc(x, y)
-                : sortAlphaDesc(x, y);
+                ? sortNumAsc(x, y)
+                : sortNumDesc(x, y);
             }
             return 0;
           })
@@ -188,6 +202,24 @@ const DataSourceTable: React.FC = () => {
 
   return (
     <div className={classes.root}>
+      <div className={classes.tabHeaderFlex}>
+        <Typography className={classes.tabHeaderText}>
+          {t('analyticsDashboard.dataSourceTable.dataSources')}
+        </Typography>
+        <ButtonFilled
+          onClick={() =>
+            history.push({
+              pathname: '/analytics/datasource/create',
+              search: `?projectID=${projectID}&projectRole=${projectRole}`,
+            })
+          }
+          className={classes.addButton}
+        >
+          <Typography className={classes.buttonText}>
+            {t('analyticsDashboard.dataSourceTable.addDataSource')}
+          </Typography>
+        </ButtonFilled>
+      </div>
       <Paper>
         <section className="Heading section">
           <TableToolBar
@@ -195,7 +227,7 @@ const DataSourceTable: React.FC = () => {
             handleSearch={(
               event: React.ChangeEvent<{ value: unknown }> | undefined,
               token: string | undefined
-            ) =>
+            ) => {
               setFilter({
                 ...filter,
                 searchTokens: (event !== undefined
@@ -205,21 +237,16 @@ const DataSourceTable: React.FC = () => {
                   .toLowerCase()
                   .split(' ')
                   .filter((s) => s !== ''),
-              })
-            }
-            dataSourceTypes={getDataSourceType(payload)}
-            statuses={getStatus(payload)}
-            callbackToSetDataSourceType={(dataSourceType: string) => {
-              setFilter({
-                ...filter,
-                selectedDataSourceType: dataSourceType,
               });
+              setPage(0);
             }}
+            statuses={getStatus(data?.ListDataSource ?? [])}
             callbackToSetStatus={(status: string) => {
               setFilter({
                 ...filter,
                 selectedStatus: status,
               });
+              setPage(0);
             }}
             callbackToSetRange={(
               selectedStartDate: string,
@@ -232,21 +259,26 @@ const DataSourceTable: React.FC = () => {
                   endDate: selectedEndDate,
                 },
               });
+              setPage(0);
             }}
           />
         </section>
       </Paper>
       <Paper>
         <section className="table section">
-          <TableContainer className={classes.tableMain}>
+          <TableContainer
+            className={`${classes.tableMain} ${
+              !payload.length || loading ? classes.minHeight : ''
+            }`}
+          >
             <Table aria-label="simple table">
               <TableHeader
-                callBackToSort={(sortConfigurations: SortData) => {
+                callBackToSort={(sortConfigurations: SortData) =>
                   setFilter({
                     ...filter,
                     sortData: sortConfigurations,
-                  });
-                }}
+                  })
+                }
               />
               <TableBody>
                 {error ? (
@@ -260,18 +292,29 @@ const DataSourceTable: React.FC = () => {
                 ) : loading ? (
                   <TableRow>
                     <TableCell colSpan={6}>
-                      <Loader />
-                      <Typography align="center">
-                        {t('analyticsDashboard.dataSourceTable.loading')}
-                      </Typography>
+                      <div
+                        className={`${classes.noRecords} ${classes.loading}`}
+                      >
+                        <Loader />
+                        <Typography align="center">
+                          {t('analyticsDashboard.dataSourceTable.loading')}
+                        </Typography>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : !payload.length ? (
                   <TableRow>
                     <TableCell colSpan={6}>
-                      <Typography align="center">
-                        {t('analyticsDashboard.dataSourceTable.noRecords')}
-                      </Typography>
+                      <div className={classes.noRecords}>
+                        <img
+                          src="./icons/dataSourceUnavailable.svg"
+                          className={classes.unavailableIcon}
+                          alt="Data Source"
+                        />
+                        <Typography className={classes.noRecordsText}>
+                          {t('analyticsDashboard.dataSourceTable.noRecords')}
+                        </Typography>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : payload.length > 0 ? (
@@ -286,7 +329,22 @@ const DataSourceTable: React.FC = () => {
                           key={data.ds_id}
                           className={classes.tableRow}
                         >
-                          <TableData data={data} />
+                          <TableData
+                            data={data}
+                            drawerStateHandler={(
+                              ds_id,
+                              ds_name,
+                              dashboards
+                            ) => {
+                              setForceDeleteVars({
+                                connectedDashboards: dashboards,
+                                dsID: ds_id,
+                                dsName: ds_name,
+                              });
+                              setDrawerState(true);
+                            }}
+                            alertStateHandler={alertStateHandler}
+                          />
                         </TableRow>
                       );
                     })
@@ -311,9 +369,144 @@ const DataSourceTable: React.FC = () => {
             onChangePage={handleChangePage}
             onChangeRowsPerPage={handleChangeRowsPerPage}
             className={classes.tablePagination}
+            SelectProps={{
+              MenuProps: {
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+                getContentAnchorEl: null,
+                classes: { paper: classes.menuList },
+              },
+            }}
+            classes={{ menuItem: classes.menuListItem }}
           />
         </section>
       </Paper>
+      {isAlertOpen && (
+        <Snackbar
+          open={isAlertOpen}
+          autoHideDuration={3000}
+          onClose={() => setIsAlertOpen(false)}
+        >
+          <Alert
+            onClose={() => setIsAlertOpen(false)}
+            severity={success ? 'success' : 'error'}
+          >
+            {success
+              ? t('analyticsDashboard.dataSourceTable.deletionSuccess')
+              : t('analyticsDashboard.dataSourceTable.deletionError')}
+          </Alert>
+        </Snackbar>
+      )}
+      <Drawer
+        className={classes.drawer}
+        variant="persistent"
+        anchor="right"
+        open={drawerState}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+        ModalProps={{
+          keepMounted: true,
+        }}
+      >
+        <div className={classes.drawerContent}>
+          <div className={classes.flexContainer}>
+            <Typography className={classes.drawerHeading} align="left">
+              {t('analyticsDashboard.dataSourceTable.delete')}
+              <b>
+                <i>{` ${forceDeleteVars.dsName} `}</i>
+              </b>
+            </Typography>
+            <ButtonOutlined
+              className={classes.closeButton}
+              onClick={() => cleanDrawerState()}
+            >
+              &#x2715;
+            </ButtonOutlined>
+          </div>
+          <blockquote className={classes.warningBlock}>
+            <Typography className={classes.warningText} align="left">
+              {t('analyticsDashboard.dataSourceTable.warning.text')}
+            </Typography>
+          </blockquote>
+          <Typography className={classes.drawerBodyText} align="left">
+            {t('analyticsDashboard.dataSourceTable.warning.info')}
+          </Typography>
+          <Typography
+            className={classes.drawerBodyText}
+            style={{ fontWeight: 500 }}
+            align="left"
+          >
+            {t(
+              'analyticsDashboard.dataSourceTable.warning.connectedDashboards'
+            )}
+          </Typography>
+          <div className={classes.dashboardsList}>
+            {(showAllDashboards
+              ? forceDeleteVars.connectedDashboards
+              : forceDeleteVars.connectedDashboards.slice(0, 3)
+            ).map((name: string, index: number) => (
+              <Typography
+                className={`${classes.drawerBodyText} ${classes.drawerListItem}`}
+                align="left"
+                key={`${name}-dashboard`}
+              >
+                {`${index + 1}. ${name}`}
+              </Typography>
+            ))}
+          </div>
+          {forceDeleteVars.connectedDashboards.length - 3 >= 1 && (
+            <TextButton
+              onClick={() => setShowAllDashboards(!showAllDashboards)}
+              className={classes.cancelButton}
+              variant="highlight"
+            >
+              <Typography className={classes.buttonText}>
+                {showAllDashboards
+                  ? t('analyticsDashboard.dataSourceTable.warning.showLess')
+                  : `+${forceDeleteVars.connectedDashboards.length - 3} ${t(
+                      'analyticsDashboard.dataSourceTable.warning.dashboards'
+                    )}`}
+              </Typography>
+            </TextButton>
+          )}
+          <div className={classes.flexButtons}>
+            <TextButton
+              onClick={() => cleanDrawerState()}
+              className={classes.cancelButton}
+            >
+              <Typography className={classes.buttonText}>
+                {t('analyticsDashboard.dataSourceTable.modal.cancel')}
+              </Typography>
+            </TextButton>
+            <ButtonFilled
+              onClick={() =>
+                deleteDataSource({
+                  variables: {
+                    deleteDSInput: {
+                      ds_id: forceDeleteVars.dsID,
+                      force_delete: true,
+                    },
+                  },
+                })
+              }
+              variant="error"
+            >
+              <Typography
+                className={`${classes.buttonText} ${classes.confirmButtonText}`}
+              >
+                {t('analyticsDashboard.dataSourceTable.modal.forceDelete')}
+              </Typography>
+            </ButtonFilled>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 };

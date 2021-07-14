@@ -19,6 +19,8 @@ interface ChartCardProps {
   isPredefined?: boolean;
 }
 
+console.error('From MyHub Charts=>  ', config.grahqlEndpoint);
+
 const ChartCard: React.FC<ChartCardProps> = ({
   expName,
   UserHub,
@@ -49,7 +51,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
         <CardContent className={classes.cardContent}>
           <img
             src={imageURL}
-            onError={() => setImageURL('/icons/default-experiment.svg')}
+            onError={() => setImageURL('./icons/default-experiment.svg')}
             alt={expName.ExperimentName}
             className={classes.cardImage}
           />

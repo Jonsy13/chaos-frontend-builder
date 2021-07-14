@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Theme } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -6,10 +6,14 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     flexDirection: 'column',
     overflow: 'hidden',
+    boxShadow:
+      '0 0.3px 0.9px rgba(0, 0, 0, 0.1), 0 1.6px 3.6px rgba(0, 0, 0, 0.13)',
+    borderRadius: '3px 3px 0 0',
   },
 
   tableMain: {
-    background: theme.palette.cards.header,
+    borderTop: `1px solid ${theme.palette.border.main}`,
+    background: theme.palette.background.paper,
     maxHeight: '30rem',
     '&::-webkit-scrollbar': {
       width: '0.2em',
@@ -23,47 +27,65 @@ const useStyles = makeStyles((theme) => ({
     '&:not(:last-child)': {
       borderBottom: 0,
     },
-    '& td': {
+    '& tr': {
       borderBottom: `1px solid ${theme.palette.border.main}`,
+      '& td': {
+        borderBottom: 0,
+      },
+    },
+  },
+
+  empty: {
+    '& tr': {
+      borderBottom: 0,
+      '& td': {
+        borderBottom: 0,
+      },
     },
   },
 
   tableBody: {
-    background: theme.palette.cards.header,
+    background: theme.palette.background.paper,
   },
 
   tableHead: {
-    background: theme.palette.cards.header,
+    background: theme.palette.background.paper,
   },
 
   nameHead: {
+    display: 'flex',
     color: theme.palette.text.hint,
-    margin: theme.spacing(2, 0, 1.5),
-    fontSize: '0.875rem',
+    fontSize: '0.75rem',
     lineHeight: '150%',
-    fontWeight: 500,
     letterSpacing: '0.02em',
+    margin: theme.spacing(1, 0),
+  },
+
+  verdictText: {
+    marginTop: theme.spacing(0.5),
   },
 
   tableObjects: {
-    textAlign: 'center',
-    paddingLeft: theme.spacing(1),
+    textAlign: 'left',
     color: theme.palette.text.primary,
-    height: '1.75rem',
-    marginTop: theme.spacing(2),
-    fontSize: '0.875rem',
-    lineHeight: '130%',
+    fontSize: '0.75rem',
+    letterSpacing: '0.02em',
+    lineHeight: '150%',
+    paddingLeft: theme.spacing(0.5),
+    margin: theme.spacing(1, 0),
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
+  flexObject: {
+    display: 'flex',
+    gap: '0.5rem',
   },
 
   headSpacing: {
-    paddingLeft: theme.spacing(2.5),
-  },
-
-  nameContent: {
-    color: theme.palette.text.primary,
-    display: 'flex',
-    fontSize: '0.8rem',
-    justifyContent: 'center',
+    minWidth: '5rem',
+    paddingLeft: theme.spacing(2),
   },
 
   checkbox: {
@@ -75,6 +97,11 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     padding: theme.spacing(5, 3),
     justifyContent: 'center',
+  },
+
+  loading: {
+    flexDirection: 'column',
+    paddingBottom: theme.spacing(7.5),
   },
 
   cloudIcon: {
@@ -98,20 +125,84 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
   },
 
+  failedToInject: {
+    color: theme.palette.warning.main,
+    marginRight: theme.spacing(1),
+  },
+
   awaited: {
     color: theme.palette.text.hint,
     marginRight: theme.spacing(1),
   },
 
-  colorBar: {
-    height: '0.45rem',
-    width: '2.75rem',
-    margin: theme.spacing(0.75, 0, 0, 1.5),
+  colorCircle: {
+    height: '0.5rem',
+    width: '0.5rem',
+    borderRadius: '50%',
+    margin: 'auto 0',
   },
 
-  infoIcon: {
-    margin: theme.spacing(1.75, 0, 0, 0.5),
+  headerSection: {
+    width: '100%',
+    display: 'flex',
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    overflowX: 'auto',
+    height: '6rem',
+    backgroundColor: theme.palette.background.paper,
   },
+  search: {
+    marginLeft: theme.spacing(8.5),
+  },
+  selectText: {
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(0.4),
+  },
+  // Form Select Properties
+  formControl: {
+    margin: theme.spacing(0.5, 2.5, 0.5, 0.5),
+    height: '2.6rem',
+    minWidth: '9rem',
+  },
+  verdictForm: {
+    marginRight: theme.spacing(3.5),
+  },
+
+  // select
+  menuList: {
+    boxShadow: '0 5px 9px rgba(0, 0, 0, 0.1)',
+  },
+  menuListItem: {
+    background: `${theme.palette.background.paper} !important`,
+    fontSize: '0.875rem',
+    lineHeight: '150%',
+    height: '1.875rem',
+    '&:hover': {
+      background: `${theme.palette.cards.highlight} !important`,
+    },
+    '&.Mui-selected': {
+      background: `${theme.palette.cards.highlight} !important`,
+    },
+  },
+}));
+
+export const useOutlinedInputStyles = makeStyles((theme: Theme) => ({
+  root: {
+    '& $notchedOutline': {
+      borderColor: theme.palette.border.main,
+    },
+    '&:hover $notchedOutline': {
+      borderColor: theme.palette.highlight,
+    },
+    '&$focused $notchedOutline': {
+      borderColor: theme.palette.highlight,
+    },
+    height: '2.75rem',
+  },
+  focused: {},
+  notchedOutline: {},
 }));
 
 export default useStyles;

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 import { IconButton, Typography } from '@material-ui/core';
 import React from 'react';
 import {
@@ -16,7 +15,6 @@ import {
 } from '../../../../models/graphql/dashboardsDetails';
 import useActions from '../../../../redux/actions';
 import * as DashboardActions from '../../../../redux/actions/dashboards';
-import * as DataSourceActions from '../../../../redux/actions/dataSource';
 import { history } from '../../../../redux/configureStore';
 import { ReactComponent as AnalyticsIcon } from '../../../../svg/analytics.svg';
 import { ReactComponent as CogwheelIcon } from '../../../../svg/cogwheel.svg';
@@ -36,22 +34,14 @@ const ApplicationDashboardCard: React.FC<ApplicationDashboardCardProps> = ({
   data,
 }) => {
   const classes = useStyles();
-
-  const dashboard = useActions(DashboardActions);
-  const dataSource = useActions(DataSourceActions);
-
   const projectID = getProjectID();
   const projectRole = getProjectRole();
+  const dashboard = useActions(DashboardActions);
 
   const onDashboardLoadRoutine = async () => {
     dashboard.selectDashboard({
       selectedDashboardID: data.db_id,
-      refreshRate: 0,
-    });
-    dataSource.selectDataSource({
-      selectedDataSourceURL: '',
-      selectedDataSourceID: '',
-      selectedDataSourceName: '',
+      selectedAgentID: data.cluster_id,
     });
     return true;
   };
@@ -103,7 +93,7 @@ const ApplicationDashboardCard: React.FC<ApplicationDashboardCardProps> = ({
 
     const applicationMetadataMap: ApplicationMetadata[] = [];
 
-    data.application_metadata_map?.forEach((applicationMetadata) => {
+    data.application_metadata_map.forEach((applicationMetadata) => {
       const applications: Resource[] = [];
 
       applicationMetadata.applications.forEach((application) => {
@@ -151,7 +141,7 @@ const ApplicationDashboardCard: React.FC<ApplicationDashboardCardProps> = ({
           <div>
             <div className={classes.statusDiv}>
               <img
-                src={`/icons/${data.db_type_id}_dashboard.svg`}
+                src={`./icons/${data.db_type_id}_dashboard.svg`}
                 alt="k8s"
                 title={data.db_type}
               />
@@ -184,7 +174,7 @@ const ApplicationDashboardCard: React.FC<ApplicationDashboardCardProps> = ({
               >
                 <AnalyticsIcon />
               </IconButton>
-              <Typography>Analytics</Typography>
+              <Typography align="center">View</Typography>
             </div>
             <div className={classes.cardActions}>
               <IconButton
@@ -201,13 +191,13 @@ const ApplicationDashboardCard: React.FC<ApplicationDashboardCardProps> = ({
               >
                 <CogwheelIcon />
               </IconButton>
-              <Typography>Configure</Typography>
+              <Typography align="center">Configure</Typography>
             </div>
             <div className={classes.cardActions}>
               <IconButton onClick={() => downloadJSON()}>
                 <DownloadIcon />
               </IconButton>
-              <Typography>JSON</Typography>
+              <Typography align="center">JSON</Typography>
             </div>
           </section>
         </div>

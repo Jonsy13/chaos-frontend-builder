@@ -15,9 +15,9 @@ if (
   apiURL = `${window.location.protocol}//${window.location.hostname}:8080`;
   sockURL += `//${window.location.hostname}:8080`;
 } else {
-  authURL = '/auth';
-  apiURL = '/api';
-  sockURL += `//${loc.host}/ws`;
+  authURL = `${process.env.PUBLIC_URL}/auth`;
+  apiURL = `${process.env.PUBLIC_URL}/api`;
+  sockURL += `//${loc.host}${process.env.PUBLIC_URL}/ws`;
 }
 export default {
   environment: process.env.NODE_ENV,
@@ -28,6 +28,6 @@ export default {
   auth: {
     url: process.env.AUTH_API || authURL,
   },
-  grahqlEndpoint: process.env.GQL_API || apiURL,
+  grahqlEndpoint: apiURL,
   grahqlEndpointSubscription: process.env.GQL_API || sockURL,
 };

@@ -9,7 +9,13 @@ import {
   useTheme,
 } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
-import { ButtonFilled, ButtonOutlined, EditableText } from 'litmus-ui';
+import {
+  ButtonFilled,
+  ButtonOutlined,
+  EditableText,
+  Modal,
+  TextButton,
+} from 'litmus-ui';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +43,7 @@ interface Option {
 }
 
 interface QueryEditingWizardProps {
+  numberOfPanels: number;
   panelVars: PanelDetails;
   selectedApps: ApplicationMetadata[];
   seriesList: Array<Option>;
@@ -53,6 +60,7 @@ interface Update {
 }
 
 const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
+  numberOfPanels,
   panelVars,
   selectedApps,
   seriesList,
@@ -66,6 +74,10 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
   const theme = useTheme();
   const { t } = useTranslation();
   const [tabValue, setTabValue] = React.useState<number>(0);
+  const [discardChangesModalOpen, setDiscardChangesModalOpen] =
+    React.useState<boolean>(false);
+  const [deletePanelModalOpen, setDeletePanelModalOpen] =
+    React.useState<boolean>(false);
   const [panelInfo, setPanelInfo] = useState<PanelDetails>({ ...panelVars });
   const [update, setUpdate] = useState<Update>({
     triggerUpdate: false,
@@ -179,6 +191,7 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
             options={panelGroupsList}
             getOptionLabel={(option: Option) => option.name}
             style={{ width: '10.3rem' }}
+            value={{ name: panelInfo.panel_group_name ?? '' }}
             renderInput={(params) => (
               <TextField {...params} variant="standard" size="small" />
             )}
@@ -213,29 +226,27 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
           style={{ gap: '1rem' }}
         >
           <ButtonOutlined
-            onClick={() => {
-              setSettings(!settings);
-            }}
+            onClick={() => setSettings(!settings)}
             className={classes.iconButton}
           >
             <img
-              src="/icons/query-settings.svg"
+              src="./icons/query-settings.svg"
               alt="Settings icon"
               className={classes.icon}
             />
           </ButtonOutlined>
-          <ButtonOutlined
-            onClick={() => {
-              handleDeletePanel(index);
-            }}
-            className={`${classes.iconButton} ${classes.deleteButton}`}
-          >
-            <img
-              src="/icons/delete.svg"
-              alt="Delete icon"
-              className={classes.icon}
-            />
-          </ButtonOutlined>
+          {numberOfPanels > 1 && (
+            <ButtonOutlined
+              onClick={() => setDeletePanelModalOpen(true)}
+              className={`${classes.iconButton} ${classes.deleteButton}`}
+            >
+              <img
+                src="./icons/delete.svg"
+                alt="Delete icon"
+                className={classes.icon}
+              />
+            </ButtonOutlined>
+          )}
         </div>
       </div>
       <Graph panelVars={panelVars} prometheusQueryData={prometheusQueryData} />
@@ -288,6 +299,7 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
             <TabPanel value={tabValue} index={0}>
               {panelInfo.prom_queries.map((prom_query, index) => (
                 <QueryEditor
+                  numberOfQueries={panelInfo.prom_queries.length}
                   index={index}
                   key={`query-editor-${prom_query.queryid}`}
                   promQuery={prom_query}
@@ -383,10 +395,8 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
             )}
 
             <ButtonFilled
-              onClick={() => {
-                handleDiscardChanges(index);
-              }}
-              className={classes.discardButton}
+              onClick={() => setDiscardChangesModalOpen(true)}
+              variant="error"
             >
               <Typography>
                 {t(
@@ -397,6 +407,116 @@ const QueryEditingWizard: React.FC<QueryEditingWizardProps> = ({
           </div>
         </>
       )}
+
+      <Modal
+        open={deletePanelModalOpen}
+        onClose={() => setDeletePanelModalOpen(false)}
+        width="45%"
+        height="fit-content"
+      >
+        <div className={classes.modal}>
+          <Typography className={classes.modalHeading} align="left">
+            <b>
+              {t(
+                'analyticsDashboard.applicationDashboards.tuneTheQueries.removeMetric'
+              )}
+            </b>
+          </Typography>
+
+          <Typography className={classes.modalBodyText} align="left">
+            {t(
+              'analyticsDashboard.applicationDashboards.tuneTheQueries.removeMetricConfirmation'
+            )}
+            <b>
+              <i>{` ${panelInfo.panel_name} `}</i>
+            </b>
+            {t('analyticsDashboard.applicationDashboards.tuneTheQueries.under')}
+            <b>
+              <i>{` ${panelInfo.panel_group_name} `}</i>
+            </b>
+            ?
+          </Typography>
+
+          <div className={classes.flexButtons}>
+            <TextButton
+              onClick={() => setDeletePanelModalOpen(false)}
+              className={classes.cancelButton}
+            >
+              <Typography className={classes.buttonText}>
+                {t(
+                  'analyticsDashboard.applicationDashboards.tuneTheQueries.cancel'
+                )}
+              </Typography>
+            </TextButton>
+            <ButtonFilled
+              onClick={() => handleDeletePanel(index)}
+              variant="error"
+            >
+              <Typography
+                className={`${classes.buttonText} ${classes.confirmButtonText}`}
+              >
+                {t(
+                  'analyticsDashboard.applicationDashboards.tuneTheQueries.delete'
+                )}
+              </Typography>
+            </ButtonFilled>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={discardChangesModalOpen}
+        onClose={() => setDiscardChangesModalOpen(false)}
+        width="45%"
+        height="fit-content"
+      >
+        <div className={classes.modal}>
+          <Typography className={classes.modalHeading} align="left">
+            {t(
+              'analyticsDashboard.applicationDashboards.tuneTheQueries.discardChangesConfirmation'
+            )}
+            <b>
+              <i>{` ${panelInfo.panel_name} `}</i>
+            </b>
+            {t('analyticsDashboard.applicationDashboards.tuneTheQueries.under')}
+            <b>
+              <i>{` ${panelInfo.panel_group_name} `}</i>
+            </b>
+            ?
+          </Typography>
+
+          <Typography className={classes.modalBodyText} align="left">
+            {t(
+              'analyticsDashboard.applicationDashboards.tuneTheQueries.discardChangesInfo'
+            )}
+          </Typography>
+
+          <div className={classes.flexButtons}>
+            <TextButton
+              onClick={() => setDiscardChangesModalOpen(false)}
+              className={classes.cancelButton}
+            >
+              <Typography className={classes.buttonText}>
+                {t(
+                  'analyticsDashboard.applicationDashboards.tuneTheQueries.cancel'
+                )}
+              </Typography>
+            </TextButton>
+            <ButtonFilled
+              onClick={() => handleDiscardChanges(index)}
+              variant="error"
+            >
+              <Typography
+                className={`${classes.buttonText} ${classes.confirmButtonText}`}
+              >
+                {t(
+                  'analyticsDashboard.applicationDashboards.tuneTheQueries.yesProceed'
+                )}
+              </Typography>
+            </ButtonFilled>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

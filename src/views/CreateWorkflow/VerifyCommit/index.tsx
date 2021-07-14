@@ -105,14 +105,14 @@ const VerifyCommit = forwardRef(
             crd: (workflow as WorkflowDetailsProps).CRDLink,
           });
           setSubject(
-            `${(workflow as WorkflowDetailsProps).name}-${
+            `${(workflow as WorkflowDetailsProps).name}_${
               workflowData.namespace
             }`
           );
           const parsedManifest = YAML.parse(manifest);
           delete parsedManifest.metadata.generateName;
           parsedManifest.metadata['labels'] = {
-            subject: `${(workflow as WorkflowDetailsProps).name}-${
+            subject: `${(workflow as WorkflowDetailsProps).name}_${
               workflowData.namespace
             }`,
           };
@@ -241,11 +241,7 @@ const VerifyCommit = forwardRef(
     isLoading(loading);
 
     const handleMutation = () => {
-      if (
-        workflow.name.length !== 0 &&
-        workflow.description.length !== 0 &&
-        weights.length !== 0
-      ) {
+      if (workflow.name.length !== 0 && weights.length !== 0) {
         const weightData: WeightMap[] = [];
 
         weights.forEach((data) => {
@@ -372,7 +368,7 @@ const VerifyCommit = forwardRef(
                   </Typography>
                 </div>
                 <img
-                  src="/icons/b-finance.svg"
+                  src="./icons/b-finance.svg"
                   alt="bfinance"
                   className={classes.bfinIcon}
                 />
@@ -589,7 +585,7 @@ const VerifyCommit = forwardRef(
             }
           >
             <div className={classes.modal}>
-              <img src="/icons/finish.svg" alt="mark" />
+              <img src="./icons/finish.svg" alt="mark" />
               <div className={classes.heading}>
                 {t('workflowStepper.aNewChaosWorkflow')}
                 <br />
@@ -626,7 +622,7 @@ const VerifyCommit = forwardRef(
             }
           >
             <div className={classes.modal}>
-              <img src="/icons/red-cross.svg" alt="mark" />
+              <img src="./icons/red-cross.svg" alt="mark" />
               <div className={classes.heading}>
                 <strong>{t('workflowStepper.workflowFailed')}</strong>
               </div>

@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client';
 import {
   IconButton,
   Paper,
@@ -14,7 +14,7 @@ import {
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { Search } from 'litmus-ui';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Loader from '../../../components/Loader';
 import { GLOBAL_PROJECT_DATA } from '../../../graphql';
@@ -33,7 +33,12 @@ interface SortInput {
   Descending?: boolean;
 }
 
-const UsageTable = () => {
+interface TimeRange {
+  start_time: string;
+  end_time: string;
+}
+
+const UsageTable: React.FC<TimeRange> = ({ start_time, end_time }) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const [paginationData, setPaginationData] = useState<Pagination>({
@@ -45,28 +50,27 @@ const UsageTable = () => {
     Descending: false,
   });
   const [search, setSearch] = useState<string>('');
-  const { data, loading } = useQuery(GLOBAL_PROJECT_DATA, {
-    variables: {
-      query: {
-        DateRange: {
-          start_date: Math.trunc(
-            new Date(
-              new Date().getFullYear(),
-              new Date().getMonth(),
-              1
-            ).getTime() / 1000
-          ).toString(),
-          end_date: Math.trunc(new Date().getTime() / 1000).toString(),
+
+  const [usageQuery, { loading, data }] = useLazyQuery(GLOBAL_PROJECT_DATA);
+
+  useEffect(() => {
+    usageQuery({
+      variables: {
+        query: {
+          DateRange: {
+            start_date: start_time,
+            end_date: end_time,
+          },
+          Pagination: {
+            page: paginationData.page,
+            limit: paginationData.limit,
+          },
+          SearchProject: search,
+          Sort: sortData,
         },
-        Pagination: {
-          page: paginationData.page,
-          limit: paginationData.limit,
-        },
-        SearchProject: search,
-        Sort: sortData,
       },
-    },
-  });
+    });
+  }, [paginationData, search, sortData, start_time, end_time]);
 
   return (
     <div className={classes.table}>
@@ -375,7 +379,7 @@ const UsageTable = () => {
                       {project.Workflows.Runs}
                     </TableCell>
                     <TableCell align="center">
-                      {project.Workflows.Runs}
+                      {project.Workflows.ExpRuns}
                     </TableCell>
                     <TableCell align="center">
                       {project.Members.Total}

@@ -25,10 +25,38 @@ export const WORKFLOW_DETAILS = gql`
     getWorkflowRuns(workflowRunsInput: $workflowRunsInput) {
       total_no_of_workflow_runs
       workflow_runs {
+        workflow_run_id
+        workflow_id
+        cluster_name
+        last_updated
+        project_id
+        cluster_id
+        workflow_name
+        cluster_type
+        phase
+        resiliency_score
+        experiments_passed
+        experiments_failed
+        experiments_awaited
+        experiments_stopped
+        experiments_na
+        total_experiments
+        isRemoved
+      }
+    }
+  }
+`;
+
+export const WORKFLOW_RUN_DETAILS = gql`
+  query workflowDetails($workflowRunsInput: GetWorkflowRunsInput!) {
+    getWorkflowRuns(workflowRunsInput: $workflowRunsInput) {
+      total_no_of_workflow_runs
+      workflow_runs {
         workflow_id
         workflow_name
         workflow_run_id
         cluster_name
+        execution_data
         last_updated
         phase
         resiliency_score
@@ -57,6 +85,21 @@ export const WORKFLOW_STATS = gql`
   }
 `;
 
+export const STACKED_BAR_GRAPH = gql`
+  query workflowDetails($workflowRunsInput: GetWorkflowRunsInput!) {
+    getWorkflowRuns(workflowRunsInput: $workflowRunsInput) {
+      total_no_of_workflow_runs
+      workflow_runs {
+        workflow_run_id
+        workflow_name
+        last_updated
+        total_experiments
+        experiments_passed
+        resiliency_score
+      }
+    }
+  }
+`;
 export const WORKFLOW_LIST_DETAILS = gql`
   query workflowListDetails($workflowInput: ListWorkflowsInput!) {
     ListWorkflow(workflowInput: $workflowInput) {
@@ -95,6 +138,30 @@ export const WORKFLOW_LIST_DETAILS_FOR_MANIFEST = gql`
       workflow_id
       workflow_manifest
       workflow_name
+    }
+  }
+`;
+
+export const GET_WORKFLOW_RUNS_STATS = gql`
+  query getWorkflowRunStats(
+    $workflowRunStatsRequest: WorkflowRunStatsRequest!
+  ) {
+    getWorkflowRunStats(workflowRunStatsRequest: $workflowRunStatsRequest) {
+      total_workflow_runs
+      succeeded_workflow_runs
+      failed_workflow_runs
+      running_workflow_runs
+      workflow_run_succeeded_percentage
+      workflow_run_failed_percentage
+      average_resiliency_score
+      passed_percentage
+      failed_percentage
+      total_experiments
+      experiments_passed
+      experiments_failed
+      experiments_awaited
+      experiments_stopped
+      experiments_na
     }
   }
 `;
@@ -395,14 +462,20 @@ export const LIST_DATASOURCE_OVERVIEW = gql`
 `;
 
 export const LIST_DASHBOARD = gql`
-  query listDashboard($projectID: String!) {
-    ListDashboard(project_id: $projectID) {
+  query listDashboard($projectID: String!, $clusterID: String, $dbID: String) {
+    ListDashboard(
+      project_id: $projectID
+      cluster_id: $clusterID
+      db_id: $dbID
+    ) {
       db_id
       ds_id
       db_name
       cluster_name
       ds_name
       ds_type
+      ds_url
+      ds_health_status
       db_type_id
       db_type_name
       db_information
@@ -454,8 +527,12 @@ export const LIST_DASHBOARD = gql`
 `;
 
 export const LIST_DASHBOARD_OVERVIEW = gql`
-  query listDashboard($projectID: String!) {
-    ListDashboard(project_id: $projectID) {
+  query listDashboard($projectID: String!, $clusterID: String, $dbID: String) {
+    ListDashboard(
+      project_id: $projectID
+      cluster_id: $clusterID
+      db_id: $dbID
+    ) {
       db_id
       db_name
       db_type_id
@@ -553,6 +630,8 @@ export const GET_TEMPLATE_BY_ID = gql`
   query GetManifestTemplate($data: String!) {
     GetTemplateManifestByID(template_id: $data) {
       template_id
+      template_name
+      template_description
       manifest
     }
   }
@@ -575,6 +654,7 @@ export const LIST_IMAGE_REGISTRY = gql`
     ListImageRegistry(project_id: $data) {
       image_registry_info {
         enable_registry
+        is_default
       }
       image_registry_id
     }
@@ -585,6 +665,7 @@ export const GET_IMAGE_REGISTRY = gql`
   query GetImageRegistry($registryid: String!, $projectid: String!) {
     GetImageRegistry(image_registry_id: $registryid, project_id: $projectid) {
       image_registry_info {
+        is_default
         enable_registry
         secret_name
         secret_namespace
@@ -597,6 +678,27 @@ export const GET_IMAGE_REGISTRY = gql`
   }
 `;
 
+export const GET_HEATMAP_DATA = gql`
+  query getHeatmapData(
+    $project_id: String!
+    $workflow_id: String!
+    $year: Int!
+  ) {
+    getHeatmapData(
+      project_id: $project_id
+      workflow_id: $workflow_id
+      year: $year
+    ) {
+      bins {
+        value
+        workflowRunDetail {
+          no_of_runs
+          date_stamp
+        }
+      }
+    }
+  }
+`;
 export const GET_GLOBAL_STATS = gql`
   query getGlobalStats($query: UsageQuery!) {
     UsageQuery(query: $query) {

@@ -8,6 +8,7 @@ import {
   Search,
 } from 'litmus-ui';
 import React, {
+  lazy,
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -16,7 +17,6 @@ import React, {
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
-import { AgentDeployModal } from '../../../components/AgentDeployModal';
 import { constants } from '../../../constants';
 import {
   GET_CLUSTER,
@@ -31,6 +31,11 @@ import * as WorkflowActions from '../../../redux/actions/workflow';
 import { RootState } from '../../../redux/reducers';
 import { getProjectID, getProjectRole } from '../../../utils/getSearchParams';
 import useStyles from './styles';
+import Loader from '../../../components/Loader';
+
+const AgentDeployModal = lazy(
+  () => import('../../../components/AgentDeployModal')
+);
 
 interface Cluster {
   cluster_name: string;
@@ -76,6 +81,8 @@ const ChooseWorkflowAgent = forwardRef((_, ref) => {
           secret_name: regData.secret_name,
           secret_namespace: regData.secret_namespace,
           enable_registry: regData.enable_registry,
+          is_default: regData.is_default,
+          update_registry: true,
         });
       }
     },
@@ -104,13 +111,15 @@ const ChooseWorkflowAgent = forwardRef((_, ref) => {
           image_registry_type: constants.public,
           secret_name: '',
           secret_namespace: '',
+          is_default: true,
           enable_registry: true,
+          update_registry: true,
         });
       }
     },
   });
 
-  const [getCluster] = useLazyQuery(GET_CLUSTER, {
+  const [getCluster, { loading }] = useLazyQuery(GET_CLUSTER, {
     onCompleted: (data) => {
       const clusters: Cluster[] = [];
       if (data && data.getCluster.length !== 0) {
@@ -228,7 +237,9 @@ const ChooseWorkflowAgent = forwardRef((_, ref) => {
         />
 
         {/* Cluster Data */}
-        {clusterData.length === 0 ? (
+        {loading ? (
+          <Loader />
+        ) : clusterData.length === 0 ? (
           <div className={classes.noAgents}>
             <Typography className={classes.noAgentsText}>
               <strong>{t('workflowAgent.noAgents')}</strong>

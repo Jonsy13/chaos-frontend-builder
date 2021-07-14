@@ -1,5 +1,10 @@
 import { useLazyQuery } from '@apollo/client';
-import { Avatar, Typography } from '@material-ui/core';
+import {
+  Avatar,
+  Checkbox,
+  FormControlLabel,
+  Typography,
+} from '@material-ui/core';
 import { ButtonOutlined, InputField, Modal } from 'litmus-ui';
 import localforage from 'localforage';
 import React, {
@@ -11,7 +16,7 @@ import React, {
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import config from '../../../config';
-import { GET_EXPERIMENT_DATA } from '../../../graphql';
+import { GET_EXPERIMENT_DATA, GET_TEMPLATE_BY_ID } from '../../../graphql';
 import { ChooseWorkflowRadio } from '../../../models/localforage/radioButton';
 import { WorkflowDetailsProps } from '../../../models/localforage/workflow';
 import { ExperimentDetail } from '../../../models/redux/myhub';
@@ -22,11 +27,15 @@ import { RootState } from '../../../redux/reducers';
 import capitalize from '../../../utils/capitalize';
 import { getProjectID } from '../../../utils/getSearchParams';
 import { validateWorkflowName } from '../../../utils/validate';
+import * as ImageRegistryActions from '../../../redux/actions/image_registry';
 import useStyles from './styles';
+
+console.error('From Workflow Settings=>  ', config.grahqlEndpoint);
 
 const WorkflowSettings = forwardRef((_, ref) => {
   const classes = useStyles();
   const [avatarModal, setAvatarModal] = useState<boolean>(false);
+  const [displayRegChange, setDisplayRegChange] = useState(true);
   const projectID = getProjectID();
   // Workflow States
   const [name, setName] = useState<string>('');
@@ -41,6 +50,13 @@ const WorkflowSettings = forwardRef((_, ref) => {
   const workflowData = useSelector((state: RootState) => state.workflowData);
   const { manifest } = useSelector(
     (state: RootState) => state.workflowManifest
+  );
+  const imageRegistry = useActions(ImageRegistryActions);
+  const imageRegistryData = useSelector(
+    (state: RootState) => state.selectedImageRegistry
+  );
+  const [updateRegistry, setUpdateRegistry] = useState(
+    imageRegistryData.update_registry
   );
   const [hubName, setHubName] = useState('');
   // Query to get charts of selected MyHub
@@ -60,6 +76,18 @@ const WorkflowSettings = forwardRef((_, ref) => {
       },
     }
   );
+
+  const [getSavedTemplateDetails] = useLazyQuery(GET_TEMPLATE_BY_ID, {
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      if (data.GetTemplateManifestByID !== undefined) {
+        setName(data.GetTemplateManifestByID.template_name);
+        setDescription(data.GetTemplateManifestByID.template_description);
+        setIcon('./avatars/litmus.svg');
+        setCRDLink(data.GetTemplateManifestByID.template_id);
+      }
+    },
+  });
 
   const { t } = useTranslation();
   const alert = useActions(AlertActions);
@@ -118,8 +146,16 @@ const WorkflowSettings = forwardRef((_, ref) => {
             },
           });
         });
+        setDisplayRegChange(true);
+        workflowAction.setWorkflowManifest({ manifest: '' });
       }
       if ((value as ChooseWorkflowRadio).selected === 'B') {
+        getSavedTemplateDetails({
+          variables: {
+            data: (value as ChooseWorkflowRadio).id,
+          },
+        });
+        setDisplayRegChange(true);
         workflowAction.setWorkflowManifest({ manifest: '' });
       }
       if ((value as ChooseWorkflowRadio).selected === 'C') {
@@ -127,11 +163,13 @@ const WorkflowSettings = forwardRef((_, ref) => {
         workflowAction.setWorkflowManifest({ manifest: manifest ?? '' });
         setDescription('Custom Chaos Workflow');
         setIcon('./avatars/litmus.svg');
+        setDisplayRegChange(true);
       }
       if ((value as ChooseWorkflowRadio).selected === 'D') {
         setName('chaos-workflow');
         setDescription('Chaos Workflow');
         setIcon('./avatars/litmus.svg');
+        setDisplayRegChange(false);
       }
 
       /** Store a boolean value in local storage to serve as an indication
@@ -187,6 +225,10 @@ const WorkflowSettings = forwardRef((_, ref) => {
       CRDLink,
     };
     localforage.setItem('workflow', workflowDetails);
+    imageRegistry.selectImageRegistry({
+      ...imageRegistryData,
+      update_registry: updateRegistry,
+    });
     if (!name.length) {
       alert.changeAlertState(true); // Workflow Name is empty and user clicked on Next
       return false;
@@ -271,7 +313,27 @@ const WorkflowSettings = forwardRef((_, ref) => {
               multiline
               rows={8}
             />
-            <br />
+            <div aria-details="spacer" className={classes.checkboxDiv} />
+            {displayRegChange && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={updateRegistry}
+                    onChange={(event) => {
+                      return setUpdateRegistry(event.target.checked);
+                    }}
+                    className={classes.checkBoxDefault}
+                    name="checkedB"
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography className={classes.checkBoxText}>
+                    {t('createWorkflow.chooseWorkflow.enableRegistry')}
+                  </Typography>
+                }
+              />
+            )}
           </div>
         </div>
       </div>

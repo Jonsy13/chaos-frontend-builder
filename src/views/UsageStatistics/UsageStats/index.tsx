@@ -1,30 +1,33 @@
-import { useQuery } from '@apollo/client';
-import React from 'react';
+import { useLazyQuery } from '@apollo/client';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Loader from '../../../components/Loader';
 import { GET_GLOBAL_STATS } from '../../../graphql';
 import Card from './Cards';
 import useStyles from './styles';
 
-const UsageStats = () => {
+interface TimeRange {
+  start_time: string;
+  end_time: string;
+}
+
+const UsageStats: React.FC<TimeRange> = ({ start_time, end_time }) => {
   const classes = useStyles();
   const { t } = useTranslation();
-  const { data, loading } = useQuery(GET_GLOBAL_STATS, {
-    variables: {
-      query: {
-        DateRange: {
-          start_date: Math.trunc(
-            new Date(
-              new Date().getFullYear(),
-              new Date().getMonth(),
-              1
-            ).getTime() / 1000
-          ).toString(),
-          end_date: Math.trunc(new Date().getTime() / 1000).toString(),
+  const [usageQuery, { loading, data }] = useLazyQuery(GET_GLOBAL_STATS);
+
+  useEffect(() => {
+    usageQuery({
+      variables: {
+        query: {
+          DateRange: {
+            start_date: start_time,
+            end_date: end_time,
+          },
         },
       },
-    },
-  });
+    });
+  }, [start_time, end_time]);
 
   return (
     <div className={classes.cardDiv}>

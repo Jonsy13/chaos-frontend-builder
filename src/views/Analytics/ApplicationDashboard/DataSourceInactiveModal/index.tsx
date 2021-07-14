@@ -30,19 +30,7 @@ const DataSourceInactiveModal: React.FC<DataSourceInactiveModalProps> = ({
   return (
     <Modal
       open
-      onClose={() => {
-        history.goBack();
-      }}
-      modalActions={
-        <ButtonOutlined
-          className={classes.closeButton}
-          onClick={() => {
-            history.goBack();
-          }}
-        >
-          &#x2715;
-        </ButtonOutlined>
-      }
+      onClose={() => history.goBack()}
       width="60%"
       height="fit-content"
     >
@@ -69,7 +57,7 @@ const DataSourceInactiveModal: React.FC<DataSourceInactiveModalProps> = ({
             }}
           >
             <img
-              src="/icons/disconnected.svg"
+              src="./icons/disconnected.svg"
               alt="disconnected"
               className={classes.buttonIcon}
             />
@@ -83,15 +71,15 @@ const DataSourceInactiveModal: React.FC<DataSourceInactiveModalProps> = ({
             {t('analyticsDashboard.monitoringDashboardPage.or')}
           </Typography>
           <ButtonOutlined
-            onClick={() => {
+            onClick={() =>
               history.push({
                 pathname: '/analytics/datasource/configure',
                 search: `?projectID=${projectID}&projectRole=${projectRole}`,
-              });
-            }}
+              })
+            }
           >
             <img
-              src="/icons/disconnected.svg"
+              src="./icons/disconnected.svg"
               alt="disconnected"
               className={classes.buttonIcon}
             />

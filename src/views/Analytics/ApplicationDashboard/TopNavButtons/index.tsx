@@ -64,7 +64,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
   const getDashboard = () => {
     const panelGroupMap: PanelGroupMap[] = [];
     const panelGroups: PanelGroupExport[] = [];
-    dashboardData.metaData[0].panel_groups.forEach((panelGroup) => {
+    dashboardData.metaData?.panel_groups.forEach((panelGroup) => {
       panelGroupMap.push({
         groupName: panelGroup.panel_group_name,
         panels: [],
@@ -150,16 +150,17 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
   };
 
   return (
-    <div className={classes.button}>
+    <div className={classes.buttons}>
       {navButtonStates.isInfoToggled ? (
         <ButtonFilled
           onClick={() => {
             setNavButtonStates({ ...navButtonStates, isInfoToggled: false });
             switchIsInfoToggled(false);
           }}
+          className={classes.button}
         >
           <img
-            src="/icons/infoWhite.svg"
+            src="./icons/infoWhite.svg"
             alt="Info icon"
             className={classes.icon}
           />
@@ -173,8 +174,13 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
             setNavButtonStates({ ...navButtonStates, isInfoToggled: true });
             switchIsInfoToggled(true);
           }}
+          className={classes.button}
         >
-          <img src="/icons/info.svg" alt="Info icon" className={classes.icon} />
+          <img
+            src="./icons/info.svg"
+            alt="Info icon"
+            className={classes.icon}
+          />
           <Typography className={classes.infoText}>
             {t('analyticsDashboard.monitoringDashboardPage.infoButtonText')}
           </Typography>
@@ -190,10 +196,10 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
                 isOptionsToggled: false,
               });
             }}
-            className={classes.optionsButton}
+            className={classes.button}
           >
             <img
-              src="/icons/menu-active.svg"
+              src="./icons/menu-active.svg"
               alt="Options icon"
               className={classes.menuIcon}
             />
@@ -207,10 +213,10 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
                 isOptionsToggled: true,
               });
             }}
-            className={classes.optionsButton}
+            className={classes.button}
           >
             <img
-              src="/icons/menu.svg"
+              src="./icons/menu.svg"
               alt="Options icon"
               className={classes.menuIcon}
             />
@@ -254,7 +260,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
         >
           <div className={classes.expDiv}>
             <img
-              src="/icons/cogwheel.svg"
+              src="./icons/cogwheel.svg"
               alt="Configure"
               className={classes.btnImg}
             />
@@ -262,7 +268,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
               data-cy="optionsConfigureDashboard"
               className={classes.btnText}
             >
-              {t('analyticsDashboardViews.kubernetesDashboard.table.configure')}
+              {t('analyticsDashboard.applicationDashboardTable.configure')}
             </Typography>
           </div>
         </MenuItem>
@@ -276,7 +282,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
         >
           <div className={classes.expDiv}>
             <img
-              src="/icons/copy-dashboard.svg"
+              src="./icons/copy-dashboard.svg"
               alt="Make a copy"
               className={classes.btnImg}
             />
@@ -296,7 +302,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
         >
           <div className={classes.expDiv}>
             <img
-              src="/icons/download-dashboard.svg"
+              src="./icons/download-dashboard.svg"
               alt="Download json"
               className={classes.btnImg}
             />
@@ -317,7 +323,7 @@ const TopNavButtons: React.FC<TopNavButtonsProps> = ({
         >
           <div className={classes.expDiv}>
             <img
-              src="/icons/export-dashboard.svg"
+              src="./icons/export-dashboard.svg"
               alt="Export pdf"
               className={classes.btnImg}
             />

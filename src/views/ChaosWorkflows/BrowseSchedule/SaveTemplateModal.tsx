@@ -4,7 +4,6 @@ import CheckOutlinedIcon from '@material-ui/icons/CheckOutlined';
 import { ButtonFilled, InputField } from 'litmus-ui';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import YAML from 'yaml';
 import { Alert } from '@material-ui/lab';
 import { useTranslation } from 'react-i18next';
 import YamlEditor from '../../../components/YamlEditor/Editor';
@@ -14,6 +13,7 @@ import useStyles from './styles';
 import { getProjectID } from '../../../utils/getSearchParams';
 import Loader from '../../../components/Loader';
 import { constants } from '../../../constants';
+import { validateWorkflowName } from '../../../utils/validate';
 
 interface SaveTemplateModalProps {
   closeTemplate: () => void;
@@ -48,7 +48,7 @@ const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
     {
       variables: {
         data: {
-          manifest: YAML.stringify(editManifest),
+          manifest: editManifest,
           template_name: templateName,
           template_description: templateDesc,
           project_id: getProjectID(),
@@ -88,15 +88,22 @@ const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
       <InputField
         label="Name of the template"
         value={templateName}
-        helperText=""
+        data-cy="WorkflowName"
         required
-        onChange={(e) => setTemplateName(e.target.value)}
+        onChange={(e) => setTemplateName(e.target.value.toLowerCase())}
+        helperText={
+          validateWorkflowName(templateName)
+            ? t('createWorkflow.chooseWorkflow.validate')
+            : ''
+        }
+        variant={validateWorkflowName(templateName) ? 'error' : 'primary'}
         className={classes.InputFieldTemplate}
       />
       <br />
       <InputField
         label="Description of the template"
         value={templateDesc}
+        data-cy="WorkflowDescription"
         helperText=""
         required
         onChange={(e) => setTemplateDesc(e.target.value)}
@@ -122,6 +129,7 @@ const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
             {t('chaosWorkflows.browseSchedules.cancel')}
           </IconButton>
           <ButtonFilled
+            data-cy="saveTemplateButton"
             onClick={() => {
               addWorkflowTemplate();
             }}
@@ -130,6 +138,7 @@ const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
               cloneResult.type === constants.success ||
               templateName.trim().length === 0 ||
               templateDesc.trim().length === 0 ||
+              validateWorkflowName(templateName) ||
               !yamlValid
             }
           >
@@ -150,6 +159,7 @@ const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
         open={displayResult}
         autoHideDuration={6000}
         onClose={handleAlertOnClose}
+        data-cy="templateAlert"
       >
         <Alert
           onClose={handleAlertOnClose}

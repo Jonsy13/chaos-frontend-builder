@@ -10,6 +10,7 @@ ARG TARGETARCH
 ARG REACT_APP_KB_CHAOS_VERSION
 ARG REACT_APP_BUILD_TIME
 ARG REACT_APP_HUB_BRANCH_NAME
+ARG PUBLIC_URL
 
 # Checking environment variables
 RUN env
@@ -29,7 +30,7 @@ RUN npm ci
 COPY . ./
 
 # Finally runs the application
-RUN DISABLE_ESLINT_PLUGIN=true npm run build --production
+RUN npm run build
 
 # Stage 2: the production environment
 FROM nginxinc/nginx-unprivileged:1.18-alpine

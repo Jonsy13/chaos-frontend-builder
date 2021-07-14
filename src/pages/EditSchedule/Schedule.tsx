@@ -17,7 +17,6 @@ import BackButton from '../../components/Button/BackButton';
 import CustomDate from '../../components/DateTime/CustomDate/index';
 import CustomTime from '../../components/DateTime/CustomTime/index';
 import { constants } from '../../constants';
-import Scaffold from '../../containers/layouts/Scaffold';
 import { WorkflowData } from '../../models/redux/workflow';
 import useActions from '../../redux/actions';
 import * as TemplateSelectionActions from '../../redux/actions/template';
@@ -29,6 +28,7 @@ import { cronWorkflow, workflowOnce } from '../../utils/workflowTemplate';
 import { fetchWorkflowNameFromManifest } from '../../utils/yamlUtils';
 import SetTime from '../../views/CreateWorkflow/ScheduleWorkflow/SetTime';
 import useStyles from '../../views/CreateWorkflow/ScheduleWorkflow/styles';
+import { externalStyles } from './styles';
 
 interface ScheduleSyntax {
   minute: string | undefined;
@@ -180,6 +180,7 @@ const ScheduleWorkflow = () => {
   }, [cronValue]);
 
   const classes = useStyles();
+  const externalClass = externalStyles();
   const { t } = useTranslation();
 
   // Sets individual minutes
@@ -385,12 +386,12 @@ const ScheduleWorkflow = () => {
   }, [cronValue]);
 
   return (
-    <Scaffold>
+    <>
       <BackButton />
       <Typography className={classes.title}>
         {t('editSchedule.title')}
       </Typography>
-      <div className={classes.root}>
+      <div className={externalClass.root}>
         <div className={classes.innerContainer}>
           <br />
           {/* Upper segment */}
@@ -407,7 +408,7 @@ const ScheduleWorkflow = () => {
               </div>
             </div>
             <img
-              src="/icons/calendarWorkflowIcon.svg"
+              src="./icons/calendarWorkflowIcon.svg"
               alt="calendar"
               className={classes.calIcon}
             />
@@ -491,6 +492,7 @@ const ScheduleWorkflow = () => {
                     <div className={classes.innerRecurring}>
                       <FormControl component="fieldset">
                         <RadioGroup
+                          data-cy="RecurringSchedule"
                           aria-label="instanceDef"
                           name="instanceDef"
                           value={valueDef}
@@ -748,6 +750,7 @@ const ScheduleWorkflow = () => {
           Cancel
         </ButtonOutlined>
         <ButtonFilled
+          data-cy="VerifyButton"
           onClick={() =>
             history.push({
               pathname: `/workflows/schedule/${getProjectID()}/${fetchWorkflowNameFromManifest(
@@ -760,7 +763,7 @@ const ScheduleWorkflow = () => {
           {t('editSchedule.verify')}
         </ButtonFilled>
       </div>
-    </Scaffold>
+    </>
   );
 };
 
