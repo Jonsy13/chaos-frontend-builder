@@ -6,11 +6,7 @@ on:
       - ^v[0-9]*.[0-9]*.x$
     tags:
       - "*"
-defaults:
-  run:
-    working-directory: litmus-portal
-    shell: bash
-
+      
 jobs:
 
   get-envs:
