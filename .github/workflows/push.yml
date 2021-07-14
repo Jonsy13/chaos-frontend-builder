@@ -26,7 +26,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: env_artifact
-          path: litmus-portal/env-vars
+          path: env-vars
 
   ## TODO: the build time for multiarch frontend image is higher so it is used in the release
   ## builds only need to optimize the build duration and also add it with ci tag
@@ -43,7 +43,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: env_artifact
-          path: litmus-portal
 
       - name: Set up Docker Buildx
         id: buildx
@@ -86,7 +85,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: env_artifact
-          path: litmus-portal
 
       - name: Set up Docker Buildx
         id: buildx
