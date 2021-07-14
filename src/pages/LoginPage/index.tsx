@@ -9,6 +9,8 @@ import { setUserDetails } from '../../utils/auth';
 import { validateStartEmptySpacing } from '../../utils/validate';
 import useStyles from './styles';
 
+console.log("GQL_API==>", process.env.GQL_API);
+
 interface authData {
   username: string;
   password: string;
