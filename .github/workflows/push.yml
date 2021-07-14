@@ -15,20 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - run: |
-          img_tag=""
-          array=(`echo ${GITHUB_REF} | sed 's/\//\n/g'`)
-          if [ ${array[1]} == "tags" ]
-          then
-              echo "tag build"
-              img_tag=${GITHUB_REF#refs/*/}
-          else
-              echo "non tag build"
-              img_tag="ci"
-          fi
-          # This is a condition where image tag looks like "pull/<pullrequest-name>" during pull request build
-          NEW_IMG_TAG=`echo $img_tag | sed "s/\//-/g"`
-          echo $NEW_IMG_TAG
-          echo export IMG_TAG=$NEW_IMG_TAG >> env-vars
+          echo export IMG_TAG="ci" >> env-vars
           echo export GRAPHQL_SERVER_IMAGE="litmusportal-server" >> env-vars
           echo export AUTHENTICATION_SERVER_IMAGE="litmusportal-auth-server" >> env-vars
           echo export FRONTEND_IMAGE="litmusportal-frontend" >> env-vars
